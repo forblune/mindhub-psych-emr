@@ -59,9 +59,19 @@ React(Vite)  ──>  data/api.js (seam)  ──>  Supabase  (env 있을 때)
 - 증상 경과 추이 차트(canvas, 환자·테마 변경 시 재드로우)
 - (env 설정 시) 로그인/가입, 세션 게이트, 담당의별 환자 격리
 
-## 아직 안 된 것 / 미검증
-- ⚠️ **SQL을 실제 Supabase에 실행해 검증하지 못함** (자격증명 없음).
-  → 처음 적용 시 에러 메시지 받으면 즉시 수정 필요.
+## SQL/RLS 검증 (2026-06-22, 로컬 PG16 + Supabase auth shim)
+✅ **실행 검증 완료** — `0001 → 0002 → seed` 무에러 적용, RLS 격리 매트릭스 통과:
+| 주체 | patients/queue/scales/notes |
+|---|---|
+| 담당의(서연우) | 7 / 7 / 28 / 9 ✅ |
+| 타 의사(담당환자 0) | 0 / 0 / 0 / 0 ✅ (격리) |
+| admin | 7 / 7 / 28 / 9 ✅ |
+| anon(비로그인) | 0 ✅ (RLS deny) |
+- 공용데이터(clinics/kpis/appointments) 로그인 사용자 전체 읽기 OK, 신규가입 트리거→profile 자동생성 OK, profiles 자기참조 재귀 없음 확인.
+- 검증 스크립트: scratchpad의 `00_supabase_shim.sql` + `verify_rls.sql` (세션 일시적).
+- 미검증(서비스 레이어, SQL 아님): 호스팅 GoTrue 이메일 인증 흐름, PostgREST 임베딩 응답 shape, 네트워크. → 본인 Supabase에 올린 뒤 로그인 1회로 확인 권장.
+
+## 아직 안 된 것
 - 검색창·새로고침·"신규 진료 시작"·정렬 세그먼트 = **UI만, 동작 미구현**
 - 쓰기 기능 없음(노트/처방 작성). 0002 하단에 RLS 쓰기 정책 *예시*만 주석.
 - Realtime 구독 없음(대기열 수동).
