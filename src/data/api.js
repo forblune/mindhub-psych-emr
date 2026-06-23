@@ -128,11 +128,11 @@ export async function getBillings() {
   if (!isSupabaseConfigured) return mock.billings.map((b) => ({ ...b }))
   const { data, error } = await supabase
     .from('billings')
-    .select('id, sort, insurance, consult_fee, drug_fee, test_fee, copay, status, patient:patients(name, chart_no)')
+    .select('id, sort, dx, insurance, consult_fee, drug_fee, test_fee, copay, status, patient:patients(name, chart_no)')
     .order('sort')
   if (error) throw error
   return data.map((b) => ({
-    id: b.id, name: b.patient?.name, chart: b.patient?.chart_no, insurance: b.insurance,
+    id: b.id, name: b.patient?.name, chart: b.patient?.chart_no, dx: b.dx, insurance: b.insurance,
     consult: b.consult_fee, drug: b.drug_fee, test: b.test_fee, copay: b.copay, status: b.status,
   }))
 }

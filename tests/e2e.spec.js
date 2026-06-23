@@ -58,6 +58,11 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(rewon).toHaveText('9')
     await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
 
+    // dx 코드에 KCD 한글명 동반(문상철 F20.0 편집조현병)
+    const mun = page.locator('.ward-list tbody tr', { hasText: '문상철' })
+    await expect(mun.locator('.dx')).toHaveText('F20.0')
+    await expect(mun.locator('.dx-ko')).toHaveText('편집조현병')
+
     // 병동 필터: 5A → 5명
     await page.locator('.ward-list .seg button', { hasText: '5A' }).click()
     await expect(page.locator('.ward-list tbody tr')).toHaveCount(5)
@@ -78,7 +83,10 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.ward-form')).toBeVisible()
     await page.locator('.note-field', { hasText: '환자명' }).locator('input').fill('테스트환자')
     await page.locator('.note-field', { hasText: '차트번호' }).locator('input').fill('00640999')
-    await page.locator('.note-field', { hasText: '진단 (F)' }).locator('input').fill('F41.1')
+    // 진단: DSM-5 선택 → ICD-10/KCD 코드 저장
+    await page.locator('.ward-form .dx-search').fill('범불안')
+    await page.locator('.ward-form .dx-opt', { hasText: 'Generalized anxiety' }).click()
+    await expect(page.locator('.ward-form .dx-selected')).toContainText('F41.1')
     const rb = page.locator('.note-field', { hasText: '병실 / 병상' }).locator('input')
     await rb.nth(0).fill('507')
     await rb.nth(1).fill('A')
@@ -109,6 +117,10 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(unpaid).toHaveText('4')
 
     const row = page.locator('tbody tr', { hasText: '강하늘' })
+    // 주상병: 코드 + KCD 한글명
+    await expect(row.locator('.dx')).toHaveText('F32.2')
+    await expect(row.locator('.dx-ko')).toHaveText('정신병적 증상이 없는 중증의 우울에피소드')
+
     await row.locator('.btn.primary', { hasText: '수납 처리' }).click()
     await expect(row.locator('.badge')).toContainText('수납완료')
     await expect(unpaid).toHaveText('3')

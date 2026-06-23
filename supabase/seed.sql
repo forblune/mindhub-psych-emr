@@ -270,14 +270,14 @@ insert into clinical_notes (patient_id, sort, author, dept, noted_at, segments) 
   ((select id from patients where chart_no = '00118802'), 0, '서연우 과장', '정신건강의학과', '2026-06-15 14:30', '[{"label":"S)","text":" 금주 유지, 수면·식욕 회복. 가끔 갈망 있으나 대처 가능."},{"label":"A)","text":" 알코올 사용장애, 의존(F10.2) — 조기 관해."},{"label":"P)","text":" 아캄프로세이트 유지, AA 연계, 간기능 추적."}]'::jsonb);
 
 -- ── 청구·수납 ──
-insert into billings (sort, patient_id, attending_id, insurance, consult_fee, drug_fee, test_fee, copay, status) values
-  (0, (select id from patients where chart_no='00513382'), (select id from doctors order by ext_id limit 1), '건강보험', 12000, 33800, 28000, 22140, '수납완료'),
-  (1, (select id from patients where chart_no='00781120'), (select id from doctors order by ext_id limit 1), '건강보험', 24000, 4830, 45000, 22149, '미수납'),
-  (2, (select id from patients where chart_no='00822640'), (select id from doctors order by ext_id limit 1), '건강보험', 18000, 0, 32000, 15000, '미수납'),
-  (3, (select id from patients where chart_no='00339915'), (select id from doctors order by ext_id limit 1), '의료급여', 12000, 19200, 18000, 1500, '수납완료'),
-  (4, (select id from patients where chart_no='00210073'), (select id from doctors order by ext_id limit 1), '의료급여', 12000, 16800, 22000, 1500, '미수납'),
-  (5, (select id from patients where chart_no='00904471'), (select id from doctors order by ext_id limit 1), '건강보험', 12000, 28000, 12000, 15600, '수납완료'),
-  (6, (select id from patients where chart_no='00118802'), (select id from doctors order by ext_id limit 1), '자비', 12000, 30000, 24000, 66000, '미수납');
+insert into billings (sort, patient_id, attending_id, dx, insurance, consult_fee, drug_fee, test_fee, copay, status) values
+  (0, (select id from patients where chart_no='00513382'), (select id from doctors order by ext_id limit 1), 'F33.1', '건강보험', 12000, 33800, 28000, 22140, '수납완료'),
+  (1, (select id from patients where chart_no='00781120'), (select id from doctors order by ext_id limit 1), 'F32.2', '건강보험', 24000, 4830, 45000, 22149, '미수납'),
+  (2, (select id from patients where chart_no='00822640'), (select id from doctors order by ext_id limit 1), 'F41.1', '건강보험', 18000, 0, 32000, 15000, '미수납'),
+  (3, (select id from patients where chart_no='00339915'), (select id from doctors order by ext_id limit 1), 'F31.1', '의료급여', 12000, 19200, 18000, 1500, '수납완료'),
+  (4, (select id from patients where chart_no='00210073'), (select id from doctors order by ext_id limit 1), 'F20.0', '의료급여', 12000, 16800, 22000, 1500, '미수납'),
+  (5, (select id from patients where chart_no='00904471'), (select id from doctors order by ext_id limit 1), 'F90.0', '건강보험', 12000, 28000, 12000, 15600, '수납완료'),
+  (6, (select id from patients where chart_no='00118802'), (select id from doctors order by ext_id limit 1), 'F10.2', '자비', 12000, 30000, 24000, 66000, '미수납');
 
 -- ── 약품·재고 ──
 insert into medications (sort, code, name, drug_class, unit, stock, min_stock, expiry, controlled) values

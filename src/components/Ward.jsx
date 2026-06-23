@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Icon from './Icon'
+import DiagnosisPicker from './DiagnosisPicker'
 
 const STATUS_CLS = { 입원중: 'b-prog', 격리: 'b-emg', 관찰: 'b-new', 퇴원예정: 'b-done' }
 const LEGAL_CLS = { 자의입원: 'lg-vol', 보호입원: 'lg-pro', 행정입원: 'lg-adm' }
@@ -20,7 +21,8 @@ function daysSince(dateStr) {
   return Math.max(1, Math.floor(ms / 86400000) + 1)
 }
 
-export default function Ward({ wards, admissions, summary, onAddAdmission, onUpdateAdmission, onDeleteAdmission }) {
+export default function Ward({ wards, admissions, summary, diagnoses = [], onAddAdmission, onUpdateAdmission, onDeleteAdmission }) {
+  const dxMap = useMemo(() => new Map(diagnoses.map((d) => [d.code, d])), [diagnoses])
   const [wardFilter, setWardFilter] = useState('전체')
   const [mode, setMode] = useState(null) // null | 'add' | <originalIndex>
   const [vals, setVals] = useState(null)
@@ -198,8 +200,8 @@ export default function Ward({ wards, admissions, summary, onAddAdmission, onUpd
                     <input value={vals.age} onChange={(e) => set('age', e.target.value)} disabled={editing} placeholder="40" type="number" style={{ width: 70 }} />
                   </div>
                 </label>
-                <label className="note-field"><span>진단 (F) *</span>
-                  <input value={vals.dx} onChange={(e) => set('dx', e.target.value)} placeholder="F32.2" />
+                <label className="note-field" style={{ gridColumn: '1 / -1' }}><span>진단 (DSM-5 선택 → ICD-10/KCD 저장) *</span>
+                  <DiagnosisPicker diagnoses={diagnoses} value={vals.dx} onChange={(code) => set('dx', code)} />
                 </label>
                 <label className="note-field"><span>입원유형</span>
                   <select value={vals.legal} onChange={(e) => set('legal', e.target.value)}>
@@ -256,7 +258,10 @@ export default function Ward({ wards, admissions, summary, onAddAdmission, onUpd
                       </div>
                       <span className="chartno">{a.chart}</span>
                     </td>
-                    <td><span className="dx">{a.dx}</span></td>
+                    <td title={dxMap.get(a.dx) ? `${a.dx} · ${dxMap.get(a.dx).ko} · ${dxMap.get(a.dx).dsm}` : a.dx}>
+                      <span className="dx">{a.dx}</span>
+                      {dxMap.get(a.dx) && <span className="dx-ko">{dxMap.get(a.dx).ko}</span>}
+                    </td>
                     <td><span className={`legal ${LEGAL_CLS[a.legal] || ''}`}>{a.legal}</span></td>
                     <td className="ref">{a.admittedOn}</td>
                     <td><span className="num">{a.dayNo}일</span></td>

@@ -136,12 +136,12 @@ for (let i = 0; i < queue.length; i++) {
 
 // billings (patients 생성 후) — attending = 시드 의사
 w(`-- ── 청구·수납 ──`)
-w(`insert into billings (sort, patient_id, attending_id, insurance, consult_fee, drug_fee, test_fee, copay, status) values`)
+w(`insert into billings (sort, patient_id, attending_id, dx, insurance, consult_fee, drug_fee, test_fee, copay, status) values`)
 w(
   billings
     .map(
       (bl, i) =>
-        `  (${i}, (select id from patients where chart_no=${q(bl.chart)}), (select id from doctors order by ext_id limit 1), ${q(bl.insurance)}, ${n(bl.consult)}, ${n(bl.drug)}, ${n(bl.test)}, ${n(bl.copay)}, ${q(bl.status)})`
+        `  (${i}, (select id from patients where chart_no=${q(bl.chart)}), (select id from doctors order by ext_id limit 1), ${q(bl.dx)}, ${q(bl.insurance)}, ${n(bl.consult)}, ${n(bl.drug)}, ${n(bl.test)}, ${n(bl.copay)}, ${q(bl.status)})`
     )
     .join(',\n') + ';'
 )

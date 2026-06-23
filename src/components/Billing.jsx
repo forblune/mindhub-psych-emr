@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const won = (n) => '₩' + (n || 0).toLocaleString()
 const INS_CLS = { 건강보험: 'lg-vol', 의료급여: 'lg-pro', 자비: 'lg-adm' }
 
-export default function Billing({ billings, summary, onMarkPaid }) {
+export default function Billing({ billings, summary, diagnoses = [], onMarkPaid }) {
+  const dxMap = useMemo(() => new Map(diagnoses.map((d) => [d.code, d])), [diagnoses])
   const [filter, setFilter] = useState('전체')
   const filters = ['전체', '미수납', '수납완료']
   const rows = billings.map((b, idx) => ({ b, idx })).filter(({ b }) => filter === '전체' || b.status === filter)
@@ -55,18 +56,24 @@ export default function Billing({ billings, summary, onMarkPaid }) {
             <table>
               <thead>
                 <tr>
-                  <th>환자</th><th>보험</th>
+                  <th>환자</th><th>주상병</th><th>보험</th>
                   <th className="ta-r">진찰료</th><th className="ta-r">약제비</th><th className="ta-r">검사료</th>
                   <th className="ta-r">본인부담금</th><th>상태</th><th aria-label="작업" />
                 </tr>
               </thead>
               <tbody>
-                {rows.length === 0 && <tr><td colSpan={8} className="queue-empty">해당 상태의 청구가 없습니다.</td></tr>}
-                {rows.map(({ b, idx }) => (
+                {rows.length === 0 && <tr><td colSpan={9} className="queue-empty">해당 상태의 청구가 없습니다.</td></tr>}
+                {rows.map(({ b, idx }) => {
+                  const d = dxMap.get(b.dx)
+                  return (
                   <tr key={b.id ?? b.chart + idx}>
                     <td>
                       <div className="pname">{b.name}</div>
                       <span className="chartno">{b.chart}</span>
+                    </td>
+                    <td title={d ? `${b.dx} · ${d.ko} · ${d.dsm}` : b.dx}>
+                      <span className="dx">{b.dx}</span>
+                      {d && <span className="dx-ko">{d.ko}</span>}
                     </td>
                     <td><span className={`legal ${INS_CLS[b.insurance] || ''}`}>{b.insurance}</span></td>
                     <td className="ta-r num">{won(b.consult)}</td>
@@ -86,7 +93,8 @@ export default function Billing({ billings, summary, onMarkPaid }) {
                       )}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

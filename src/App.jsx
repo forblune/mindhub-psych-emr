@@ -422,6 +422,7 @@ export default function App() {
           wards={data.wards}
           admissions={data.admissions}
           summary={data.wardSummary}
+          diagnoses={data.diagnoses}
           onAddAdmission={handleAddAdmission}
           onUpdateAdmission={handleUpdateAdmission}
           onDeleteAdmission={handleDeleteAdmission}
@@ -436,7 +437,7 @@ export default function App() {
           onDelete={handleDeleteAppt}
         />
       ) : view === 'billing' ? (
-        <Billing billings={data.billings} summary={data.billingSummary} onMarkPaid={handleMarkPaid} />
+        <Billing billings={data.billings} summary={data.billingSummary} diagnoses={data.diagnoses} onMarkPaid={handleMarkPaid} />
       ) : view === 'meds' ? (
         <Medications
           medications={data.medications}
