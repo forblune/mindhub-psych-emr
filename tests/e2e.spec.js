@@ -374,6 +374,11 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await page.locator('.dx-search').fill('Bipolar II')
     await expect(page.locator('.dx-opt')).toContainText('F31.8')
     await expect(page.locator('.dx-opt')).not.toContainText('F31.81')
+
+    // 중증도 다중 코드: 재발성 우울장애는 경도~중증 4코드(F33.0~.3)
+    await page.locator('.dx-search').fill('F33')
+    await expect(page.locator('.dx-opt')).toHaveCount(4)
+    await expect(page.locator('.dx-opt', { hasText: 'F33.3' })).toContainText('정신병적 증상이 있는 중증')
   })
 
   test('환자 패널·대기열 — dx 코드에 한글 진단명 동반 표시', async ({ page }) => {
