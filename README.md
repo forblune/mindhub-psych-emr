@@ -60,7 +60,8 @@ Supabase 대시보드 **SQL Editor** 에 순서대로 붙여넣고 실행:
 3) supabase/migrations/0003_note_write.sql # 노트 쓰기 정책
 4) supabase/migrations/0004_rx_write.sql   # 처방 쓰기 정책
 5) supabase/migrations/0005_note_rx_modify.sql # 노트·처방 수정/삭제 정책
-6) supabase/seed.sql                       # 데모 데이터(담당의 연결 포함)
+6) supabase/migrations/0006_scale_lab_write.sql # 척도·검사 입력/삭제 정책
+7) supabase/seed.sql                       # 데모 데이터(담당의 연결 포함)
 ```
 (또는 Supabase CLI: `supabase db push` 후 `psql ... -f supabase/seed.sql`)
 

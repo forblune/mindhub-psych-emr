@@ -108,9 +108,9 @@ const QUEUE_SELECT = `
   patient:patients!inner (
     id, chart_no, name, sex, age, rrn, initial, primary_tags,
     safety:safety_assessments ( level, sev, bold, body ),
-    scales:rating_scales ( sort, name, tag, value, max, pct, severity, severity_label ),
+    scales:rating_scales ( id, sort, name, tag, value, max, pct, severity, severity_label ),
     trend:trend_points ( sort, label, phq, gad ),
-    labs ( sort, lab_group, name, value, ref_range, flag, flag_type, collected ),
+    labs ( id, sort, lab_group, name, value, ref_range, flag, flag_type, collected ),
     rx:prescriptions ( id, sort, drug_class, class_warn, name, brand, dose, sub, sub_bold, qty, price, is_new ),
     notes:clinical_notes ( id, sort, author, dept, noted_at, segments ),
     meta:patient_detail_meta ( summary, rx_warn_title, rx_warn_body )
@@ -161,6 +161,7 @@ function mapDetail(p) {
       ? { level: safety.level, sev: safety.sev, bold: safety.bold, text: safety.body }
       : { level: 'md', sev: '', bold: '', text: '' },
     scales: scales.map((s) => ({
+      id: s.id,
       name: s.name,
       tag: s.tag,
       value: s.value,
@@ -315,6 +316,88 @@ export async function deletePrescription({ id }) {
   if (error) throw error
 }
 
+// ── scales / labs add+delete ────────────────────────────────────
+async function resolvePid(patientId, chart) {
+  if (patientId) return patientId
+  const { data, error } = await supabase.from('patients').select('id').eq('chart_no', chart).single()
+  if (error) throw error
+  return data.id
+}
+
+export async function addScale({ patientId, chart, scale }) {
+  if (!isSupabaseConfigured) return { ...scale }
+  const pid = await resolvePid(patientId, chart)
+  const { data, error } = await supabase
+    .from('rating_scales')
+    .insert({
+      patient_id: pid,
+      sort: Date.now(),
+      name: scale.name,
+      tag: scale.tag,
+      value: scale.value,
+      max: scale.max,
+      pct: scale.pct,
+      severity: scale.cls,
+      severity_label: scale.label,
+    })
+    .select('id, name, tag, value, max, pct, severity, severity_label')
+    .single()
+  if (error) throw error
+  return {
+    id: data.id,
+    name: data.name,
+    tag: data.tag,
+    value: data.value,
+    max: data.max,
+    pct: data.pct,
+    cls: data.severity,
+    label: data.severity_label,
+  }
+}
+
+export async function deleteScale({ id }) {
+  if (!isSupabaseConfigured || !id) return
+  const { error } = await supabase.from('rating_scales').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function addLab({ patientId, chart, lab }) {
+  if (!isSupabaseConfigured) return { ...lab }
+  const pid = await resolvePid(patientId, chart)
+  const { data, error } = await supabase
+    .from('labs')
+    .insert({
+      patient_id: pid,
+      sort: Date.now(),
+      lab_group: lab.group,
+      name: lab.name,
+      value: lab.val,
+      ref_range: lab.ref,
+      flag: lab.flag,
+      flag_type: lab.flagType,
+      collected: lab.date,
+    })
+    .select('id, lab_group, name, value, ref_range, flag, flag_type, collected')
+    .single()
+  if (error) throw error
+  return {
+    id: data.id,
+    group: data.lab_group,
+    name: data.name,
+    val: data.value,
+    ref: data.ref_range,
+    flag: data.flag,
+    flagType: data.flag_type,
+    date: data.collected,
+  }
+}
+
+export async function deleteLab({ id }) {
+  if (!isSupabaseConfigured || !id) return
+  const { error } = await supabase.from('labs').delete().eq('id', id)
+  if (error) throw error
+}
+
 // flatten lab rows back into ordered [{ group, rows: [...] }]
 function groupLabs(rows) {
   const groups = []
@@ -325,6 +408,8 @@ function groupLabs(rows) {
       groups.push({ group: r.lab_group, rows: [] })
     }
     groups[index.get(r.lab_group)].rows.push({
+      id: r.id,
+      group: r.lab_group,
       name: r.name,
       val: r.value,
       ref: r.ref_range,

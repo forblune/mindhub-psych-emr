@@ -23,6 +23,10 @@ import {
   deleteNote,
   updatePrescription,
   deletePrescription,
+  addScale,
+  deleteScale,
+  addLab,
+  deleteLab,
 } from './data/api'
 
 export default function App() {
@@ -134,6 +138,45 @@ export default function App() {
     patchDetail(chart, (d) => ({ ...d, rx: { ...d.rx, items: d.rx.items.filter((_, i) => i !== index) } }))
   }
 
+  async function handleAddScale(chart, scale) {
+    const item = data.queue.find((p) => p.chart === chart)
+    if (!item) return
+    const created = await addScale({ patientId: item.patientId, chart, scale })
+    patchDetail(chart, (d) => ({ ...d, scales: [...d.scales, created] }))
+  }
+
+  async function handleDeleteScale(chart, index) {
+    const s = data.queue.find((p) => p.chart === chart)?.detail.scales[index]
+    if (!s) return
+    await deleteScale({ id: s.id })
+    patchDetail(chart, (d) => ({ ...d, scales: d.scales.filter((_, i) => i !== index) }))
+  }
+
+  async function handleAddLab(chart, lab) {
+    const item = data.queue.find((p) => p.chart === chart)
+    if (!item) return
+    const created = await addLab({ patientId: item.patientId, chart, lab })
+    patchDetail(chart, (d) => {
+      const labs = d.labs.map((g) => ({ ...g, rows: [...g.rows] }))
+      const g = labs.find((x) => x.group === created.group)
+      if (g) g.rows.push(created)
+      else labs.push({ group: created.group, rows: [created] })
+      return { ...d, labs }
+    })
+  }
+
+  async function handleDeleteLab(chart, groupIdx, rowIdx) {
+    const row = data.queue.find((p) => p.chart === chart)?.detail.labs[groupIdx]?.rows[rowIdx]
+    if (!row) return
+    await deleteLab({ id: row.id })
+    patchDetail(chart, (d) => {
+      const labs = d.labs
+        .map((g, gi) => (gi === groupIdx ? { ...g, rows: g.rows.filter((_, ri) => ri !== rowIdx) } : g))
+        .filter((g) => g.rows.length > 0)
+      return { ...d, labs }
+    })
+  }
+
   if (loading) return null
   if (isSupabaseConfigured && !session) return <Login />
   if (!data) return null
@@ -179,6 +222,10 @@ export default function App() {
             onDeleteNote={handleDeleteNote}
             onUpdateRx={handleUpdateRx}
             onDeleteRx={handleDeleteRx}
+            onAddScale={handleAddScale}
+            onDeleteScale={handleDeleteScale}
+            onAddLab={handleAddLab}
+            onDeleteLab={handleDeleteLab}
           />
           <Schedule schedule={data.schedule} />
         </div>

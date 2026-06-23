@@ -162,6 +162,50 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.rx')).toHaveCount(before - 1)
   })
 
+  test('척도 입력 — PHQ-9 점수 입력 시 카드 추가', async ({ page }) => {
+    await page.goto('/')
+    // 평가척도 탭은 기본 활성
+    const before = await page.locator('.scale').count()
+    await page.locator('.note-add-btn', { hasText: '척도 입력' }).click()
+    await expect(page.locator('.note-form')).toBeVisible()
+    await page.locator('.note-field select').selectOption('PHQ-9')
+    await page.locator('.note-field input[type="number"]').fill('21')
+    await page.getByRole('button', { name: '척도 저장' }).click()
+    await expect(page.locator('.scale')).toHaveCount(before + 1)
+    // 21점 → 중증
+    await expect(page.locator('.scale').last()).toContainText('중증')
+  })
+
+  test('척도 삭제 — 확인 후 카드 제거', async ({ page }) => {
+    page.on('dialog', (d) => d.accept())
+    await page.goto('/')
+    const before = await page.locator('.scale').count()
+    await page.locator('.scale').first().locator('.scale-del').click()
+    await expect(page.locator('.scale')).toHaveCount(before - 1)
+  })
+
+  test('검사 입력 — 항목 추가 시 표에 반영', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.tab', { hasText: '검사·약물농도' }).click()
+    const before = await page.locator('.lab-val').count()
+    await page.locator('.note-add-btn', { hasText: '검사 입력' }).click()
+    await expect(page.locator('.note-form')).toBeVisible()
+    await page.locator('.note-field', { hasText: '항목명' }).locator('input').fill('비타민D')
+    await page.locator('.note-field', { hasText: '결과' }).locator('input').fill('18')
+    await page.getByRole('button', { name: '검사 저장' }).click()
+    await expect(page.locator('.lab-val')).toHaveCount(before + 1)
+    await expect(page.locator('.panes')).toContainText('비타민D')
+  })
+
+  test('검사 삭제 — 확인 후 행 제거', async ({ page }) => {
+    page.on('dialog', (d) => d.accept())
+    await page.goto('/')
+    await page.locator('.tab', { hasText: '검사·약물농도' }).click()
+    const before = await page.locator('.lab-val').count()
+    await page.locator('.lab-del').first().click()
+    await expect(page.locator('.lab-val')).toHaveCount(before - 1)
+  })
+
   test('정렬 — 위험도순은 고위험을 맨 위로', async ({ page }) => {
     await page.goto('/')
 
