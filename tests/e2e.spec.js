@@ -360,6 +360,38 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.rx').last()).toHaveClass(/new/)
   })
 
+  test('처방 시 재고 자동 차감 — 약품 마스터 일치 시 stock 감소', async ({ page }) => {
+    await page.goto('/')
+    // 졸피뎀 10mg 20T 처방 (약품 마스터 재고 140 → 120)
+    await page.locator('.tab', { hasText: '처방·오더' }).click()
+    await page.locator('.note-add-btn', { hasText: '처방 추가' }).click()
+    await page.locator('.note-field', { hasText: '약물명' }).locator('input').fill('졸피뎀 10mg')
+    await page.locator('.note-field', { hasText: '용법' }).locator('input').fill('취침 전 1정')
+    await page.locator('.note-field', { hasText: '수량' }).locator('input').fill('20T')
+    await page.locator('.note-form button[type="submit"]').click()
+    await expect(page.locator('.rx').last()).toContainText('졸피뎀 10mg')
+
+    // 약품·재고 화면에서 재고 차감 확인
+    await page.locator('.nav-item', { hasText: '약품 · 재고' }).click()
+    const row = page.locator('tbody tr', { hasText: '졸피뎀 10mg' })
+    await expect(row.locator('td.ta-r.num').first()).toHaveText('120')
+  })
+
+  test('처방 시 재고 — 마스터에 없는 약물명은 차감 없음', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.tab', { hasText: '처방·오더' }).click()
+    await page.locator('.note-add-btn', { hasText: '처방 추가' }).click()
+    // 용량 불일치(쿠에티아핀 25mg 마스터 ≠ 200mg 처방) → 차감 없음
+    await page.locator('.note-field', { hasText: '약물명' }).locator('input').fill('쿠에티아핀 200mg')
+    await page.locator('.note-field', { hasText: '용법' }).locator('input').fill('1일 2회')
+    await page.locator('.note-field', { hasText: '수량' }).locator('input').fill('60T')
+    await page.locator('.note-form button[type="submit"]').click()
+
+    await page.locator('.nav-item', { hasText: '약품 · 재고' }).click()
+    const row = page.locator('tbody tr', { hasText: '쿠에티아핀 25mg' })
+    await expect(row.locator('td.ta-r.num').first()).toHaveText('90') // 변동 없음
+  })
+
   test('노트 수정 — 내용 변경 후 반영', async ({ page }) => {
     await page.goto('/')
     await page.locator('.tab', { hasText: '경과·면담' }).click()

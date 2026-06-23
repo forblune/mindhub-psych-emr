@@ -247,6 +247,21 @@ export async function deleteMedication({ id }) {
   if (error) throw error
 }
 
+// ── 처방 → 재고 연동 ────────────────────────────────────────────
+// 처방 수량 문자열에서 정수 추출. '30T' → 30, '180T' → 180, '—'/'' → 0.
+export function parseRxQty(qty) {
+  const m = String(qty ?? '').match(/\d+/)
+  return m ? parseInt(m[0], 10) : 0
+}
+
+// 처방 약물명이 약품 마스터명과 정확히 일치하는 항목의 인덱스(없으면 -1).
+// 용량까지 같아야 동일 품목 — '쿠에티아핀 25mg' ≠ '쿠에티아핀 100mg'.
+export function matchMedicationIndex(medications, rxName) {
+  const name = String(rxName ?? '').trim()
+  if (!name) return -1
+  return medications.findIndex((m) => m.name.trim() === name)
+}
+
 // ── 신규 환자 접수 (신규 진료 시작) ─────────────────────────────
 function nowHHMM() {
   const d = new Date()

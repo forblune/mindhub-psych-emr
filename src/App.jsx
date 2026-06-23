@@ -57,6 +57,8 @@ import {
   addMedication,
   updateMedStock,
   deleteMedication,
+  parseRxQty,
+  matchMedicationIndex,
 } from './data/api'
 
 async function loadAll() {
@@ -171,6 +173,8 @@ export default function App() {
           : p
       ),
     }))
+    // 처방 시 재고 자동 차감 (약물명이 약품 마스터와 정확히 일치 + 수량>0 일 때)
+    await dispenseForRx(rx)
   }
 
   // immutably patch one patient's detail in queue state
@@ -361,6 +365,20 @@ export default function App() {
     if (!m) return
     await deleteMedication({ id: m.id })
     setMeds(data.medications.filter((_, i) => i !== index))
+  }
+
+  // 처방 1건을 약품 마스터와 매칭해 재고 차감. 일치 품목 없거나 수량 0이면 무동작.
+  async function dispenseForRx(rx) {
+    const meds = data.medications
+    const idx = matchMedicationIndex(meds, rx.name)
+    if (idx < 0) return
+    const need = parseRxQty(rx.qty)
+    if (need <= 0) return
+    const m = meds[idx]
+    const stock = Math.max(0, m.stock - need)
+    if (stock === m.stock) return
+    await updateMedStock({ id: m.id, stock })
+    setMeds(meds.map((it, i) => (i === idx ? { ...it, stock } : it)))
   }
 
   async function refresh() {
