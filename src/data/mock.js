@@ -18,11 +18,8 @@ export const doctor = {
   initial: '서',
 }
 
-export const systemStatus = [
-  { label: 'HIRA 청구 연동', value: '정상', ok: true },
-  { label: '척도검사 서버', value: '정상', ok: true },
-  { label: '마지막 동기화', value: '12:41:08', ok: false },
-]
+// 사이드바 내비게이션·시스템 상태(navGroups·systemStatus)는 순수 UI 설정이라
+// data/config.js 가 단일 소스. (api.js 가 config 에서 직접 읽음 — 여기 두지 않음)
 
 export const kpis = [
   { tone: 't-acc', label: '금일 예약', value: '26', sub: '완료 14 · 잔여 12' },
@@ -31,36 +28,6 @@ export const kpis = [
   { tone: 't-crit', label: '미작성 기록', value: '5', sub: '면담노트 · 척도 3건' },
   { tone: 't-crit', label: '고위험 환자', value: '3', sub: '자살위험 평가 필요' },
   { tone: 't-ok', label: '담당 입원', value: '9', sub: '폐쇄병동 · 격리 1' },
-]
-
-export const navGroups = [
-  {
-    title: '진료',
-    items: [
-      { icon: 'dashboard', label: '진료 대시보드', active: true },
-      { icon: 'user', label: '환자 검색' },
-      { icon: 'calendar', label: '예약 관리', count: 26 },
-      { icon: 'checklist', label: '진료 대기열', count: 7 },
-    ],
-  },
-  {
-    title: '평가 · 치료',
-    items: [
-      { icon: 'pill', label: '처방 · 오더' },
-      { icon: 'chart', label: '심리평가 · 척도', count: 5, crit: true },
-      { icon: 'chat', label: '상담 · 면담 기록' },
-      { icon: 'hospital', label: '입원 · 폐쇄병동', count: 9 },
-    ],
-  },
-  {
-    title: '운영',
-    items: [
-      { icon: 'card', label: '청구 · 수납' },
-      { icon: 'box', label: '약품 · 재고', count: 2, crit: true },
-      { icon: 'bars', label: '통계 · 지표' },
-      { icon: 'gear', label: '설정' },
-    ],
-  },
 ]
 
 // status: 예약 / 진행중 / 완료 / 취소 / 노쇼 (단일 소스 — 표현은 파생)
