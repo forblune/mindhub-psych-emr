@@ -4,6 +4,7 @@ import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { clinic, doctor, kpis, schedule, queue, wards, admissions, billings, medications, apptPresentation } from '../src/data/mock.js'
+import { diagnoses } from '../src/data/diagnoses.js'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const out = resolve(__dir, '../supabase/seed.sql')
@@ -23,7 +24,7 @@ w('-- 재생성:  node scripts/gen-seed.mjs')
 w('begin;')
 w('truncate clinics, doctors, patients, queue_entries, safety_assessments,')
 w('  rating_scales, trend_points, labs, prescriptions, clinical_notes,')
-w('  patient_detail_meta, appointments, kpis, wards, admissions, billings, medications restart identity cascade;')
+w('  patient_detail_meta, appointments, kpis, wards, admissions, billings, medications, diagnoses restart identity cascade;')
 w()
 
 // clinic + doctor
@@ -155,6 +156,16 @@ w(
       (m, i) =>
         `  (${i}, ${q(m.code)}, ${q(m.name)}, ${q(m.drugClass)}, ${q(m.unit)}, ${n(m.stock)}, ${n(m.min)}, ${q(m.expiry)}, ${b(m.controlled)})`
     )
+    .join(',\n') + ';'
+)
+w()
+
+// diagnoses (진단 마스터 — DSM-5 → ICD-10/KCD)
+w(`-- ── 진단 마스터 (DSM-5 → ICD-10/KCD) ──`)
+w(`insert into diagnoses (sort, code, dsm_name, ko_name, dx_group, note) values`)
+w(
+  diagnoses
+    .map((d, i) => `  (${i}, ${q(d.code)}, ${q(d.dsm)}, ${q(d.ko)}, ${q(d.group)}, ${q(d.note)})`)
     .join(',\n') + ';'
 )
 w()

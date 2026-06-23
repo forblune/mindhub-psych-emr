@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import DiagnosisPicker from './DiagnosisPicker'
 
-export default function NewVisit({ onSubmit, onClose }) {
+export default function NewVisit({ onSubmit, onClose, diagnoses = [] }) {
   const [vals, setVals] = useState({ name: '', sex: '남', age: '', type: '초진', dx: '' })
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -8,7 +9,8 @@ export default function NewVisit({ onSubmit, onClose }) {
 
   async function submit(e) {
     e.preventDefault()
-    if (!vals.name.trim() || !vals.dx.trim()) return setErr('환자명과 진단(F)은 필수입니다.')
+    if (!vals.name.trim()) return setErr('환자명은 필수입니다.')
+    if (!vals.dx.trim()) return setErr('진단을 DSM-5 진단명에서 선택하세요.')
     setBusy(true)
     setErr('')
     try {
@@ -46,9 +48,9 @@ export default function NewVisit({ onSubmit, onClose }) {
               <option>재진</option>
             </select>
           </label>
-          <label className="note-field">
-            <span>진단 (F) *</span>
-            <input value={vals.dx} onChange={(e) => set('dx', e.target.value)} placeholder="F41.1" />
+          <label className="note-field" style={{ gridColumn: '1 / -1' }}>
+            <span>진단 (DSM-5 선택 → ICD-10/KCD 저장) *</span>
+            <DiagnosisPicker diagnoses={diagnoses} value={vals.dx} onChange={(code) => set('dx', code)} />
           </label>
         </div>
         {err && <div className="note-err">{err}</div>}

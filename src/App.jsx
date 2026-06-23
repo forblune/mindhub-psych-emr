@@ -59,16 +59,17 @@ import {
   deleteMedication,
   parseRxQty,
   matchMedicationIndex,
+  getDiagnoses,
 } from './data/api'
 
 async function loadAll() {
-  const [clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary, medications, medSummary] =
+  const [clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary, medications, medSummary, diagnoses] =
     await Promise.all([
       getClinic(), getDoctor(), getKpis(), getNavGroups(), getQueue(),
       getSchedule(), getSystemStatus(), getWards(), getAdmissions(), getWardSummary(),
-      getBillings(), getBillingSummary(), getMedications(), getMedSummary(),
+      getBillings(), getBillingSummary(), getMedications(), getMedSummary(), getDiagnoses(),
     ])
-  return { clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary, medications, medSummary }
+  return { clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary, medications, medSummary, diagnoses }
 }
 
 export default function App() {
@@ -505,7 +506,7 @@ export default function App() {
         </div>
       </main>
       )}
-      {showNewVisit && <NewVisit onSubmit={handleStartVisit} onClose={() => setShowNewVisit(false)} />}
+      {showNewVisit && <NewVisit onSubmit={handleStartVisit} onClose={() => setShowNewVisit(false)} diagnoses={data.diagnoses} />}
     </div>
   )
 }

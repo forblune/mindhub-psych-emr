@@ -10,6 +10,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import * as mock from './mock'
 import { navGroups, systemStatus } from './config'
+import { diagnoses as dxMaster } from './diagnoses'
 
 const ok = (v) => Promise.resolve(v)
 const bySort = (a, b) => a.sort - b.sort
@@ -260,6 +261,17 @@ export function matchMedicationIndex(medications, rxName) {
   const name = String(rxName ?? '').trim()
   if (!name) return -1
   return medications.findIndex((m) => m.name.trim() === name)
+}
+
+// ── 진단 마스터 (DSM-5 → ICD-10/KCD) ────────────────────────────
+export async function getDiagnoses() {
+  if (!isSupabaseConfigured) return dxMaster.map((d) => ({ ...d }))
+  const { data, error } = await supabase
+    .from('diagnoses')
+    .select('code, dsm_name, ko_name, dx_group, note')
+    .order('sort')
+  if (error) throw error
+  return data.map((d) => ({ code: d.code, dsm: d.dsm_name, ko: d.ko_name, group: d.dx_group, note: d.note }))
 }
 
 // ── 신규 환자 접수 (신규 진료 시작) ─────────────────────────────

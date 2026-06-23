@@ -3,7 +3,7 @@
 begin;
 truncate clinics, doctors, patients, queue_entries, safety_assessments,
   rating_scales, trend_points, labs, prescriptions, clinical_notes,
-  patient_detail_meta, appointments, kpis, wards, admissions, billings, medications restart identity cascade;
+  patient_detail_meta, appointments, kpis, wards, admissions, billings, medications, diagnoses restart identity cascade;
 
 insert into clinics (hospital, department, room, session, display_date) values
   ('메디코어', '정신건강의학과', '제2진료실', '2026-06-22 오후 진료', '2026-06-22 (월)');
@@ -292,5 +292,36 @@ insert into medications (sort, code, name, drug_class, unit, stock, min_stock, e
   (8, 'B05500088', '클로나제팜 0.5mg', '벤조디아제핀', '정', 220, 80, '2027-06', true),
   (9, 'B06200140', '졸피뎀 10mg', '수면제', '정', 140, 80, '2027-03', true),
   (10, 'B07700233', '메틸페니데이트 18mg', '정신자극제', '정', 95, 60, '2026-08', true);
+
+-- ── 진단 마스터 (DSM-5 → ICD-10/KCD) ──
+insert into diagnoses (sort, code, dsm_name, ko_name, dx_group, note) values
+  (0, 'F10.2', 'Alcohol use disorder (moderate–severe)', '알코올 사용에 의한 의존증후군', '물질 사용 (F10–F19)', 'DSM-5 알코올사용장애 중등도 이상 ≈ 의존(F10.2); 경도는 F10.1'),
+  (1, 'F20.0', 'Schizophrenia (paranoid type)', '편집조현병', '조현병 스펙트럼 (F20–F29)', 'DSM-5는 아형 폐지 → KCD-8은 아형 유지; 미특정 시 F20.9'),
+  (2, 'F20.9', 'Schizophrenia, unspecified', '상세불명의 조현병', '조현병 스펙트럼 (F20–F29)', 'DSM-5 조현병의 기본 매핑(아형 미지정)'),
+  (3, 'F22.0', 'Delusional disorder', '망상장애', '조현병 스펙트럼 (F20–F29)', ''),
+  (4, 'F25.0', 'Schizoaffective disorder, bipolar type', '조현정동장애, 조증형', '조현병 스펙트럼 (F20–F29)', ''),
+  (5, 'F25.1', 'Schizoaffective disorder, depressive type', '조현정동장애, 우울형', '조현병 스펙트럼 (F20–F29)', ''),
+  (6, 'F31.1', 'Bipolar I disorder, current episode manic', '양극성 정동장애, 정신병적 증상이 없는 조증', '기분장애 (F30–F39)', ''),
+  (7, 'F31.2', 'Bipolar I disorder, manic with psychotic features', '양극성 정동장애, 정신병적 증상이 있는 조증', '기분장애 (F30–F39)', ''),
+  (8, 'F31.8', 'Bipolar II disorder', '기타 양극성 정동장애', '기분장애 (F30–F39)', 'KCD-8은 II형을 F31.8에 포함; ICD-10-CM/DSM-5-TR은 F31.81'),
+  (9, 'F32.1', 'Major depressive disorder, single episode, moderate', '중등도 우울에피소드', '기분장애 (F30–F39)', ''),
+  (10, 'F32.2', 'MDD, single episode, severe without psychotic features', '정신병적 증상이 없는 중증의 우울에피소드', '기분장애 (F30–F39)', ''),
+  (11, 'F32.3', 'MDD, single episode, severe with psychotic features', '정신병적 증상이 있는 중증의 우울에피소드', '기분장애 (F30–F39)', ''),
+  (12, 'F33.1', 'MDD, recurrent, moderate', '재발성 우울장애, 현존 중등도', '기분장애 (F30–F39)', ''),
+  (13, 'F33.2', 'MDD, recurrent, severe without psychotic features', '재발성 우울장애, 정신병적 증상이 없는 중증', '기분장애 (F30–F39)', ''),
+  (14, 'F34.1', 'Persistent depressive disorder (dysthymia)', '기분저하증', '기분장애 (F30–F39)', ''),
+  (15, 'F40.1', 'Social anxiety disorder (social phobia)', '사회공포증', '불안·강박·스트레스 (F40–F48)', ''),
+  (16, 'F41.0', 'Panic disorder', '공황장애', '불안·강박·스트레스 (F40–F48)', ''),
+  (17, 'F41.1', 'Generalized anxiety disorder', '범불안장애', '불안·강박·스트레스 (F40–F48)', ''),
+  (18, 'F42.2', 'Obsessive-compulsive disorder', '강박장애, 혼합형', '불안·강박·스트레스 (F40–F48)', 'KCD F42 하위(.0 사고/.1 행위/.2 혼합); DSM-5-TR OCD=F42.2'),
+  (19, 'F43.1', 'Posttraumatic stress disorder (PTSD)', '외상후 스트레스장애', '불안·강박·스트레스 (F40–F48)', ''),
+  (20, 'F43.2', 'Adjustment disorder', '적응장애', '불안·강박·스트레스 (F40–F48)', ''),
+  (21, 'F50.0', 'Anorexia nervosa', '신경성 식욕부진증', '섭식·수면 (F50–F59)', 'DSM-5-TR은 아형 분리(제한형 F50.01/폭식-제거형 F50.02)'),
+  (22, 'F50.2', 'Bulimia nervosa', '신경성 폭식증', '섭식·수면 (F50–F59)', ''),
+  (23, 'F51.0', 'Insomnia disorder', '비기질성 불면증', '섭식·수면 (F50–F59)', 'KCD는 F51.0; DSM-5-TR 불면장애는 F51.01'),
+  (24, 'F60.2', 'Antisocial personality disorder', '비사회성 인격장애', '인격장애 (F60–F69)', ''),
+  (25, 'F60.3', 'Borderline personality disorder', '정서불안정성 인격장애(경계성)', '인격장애 (F60–F69)', 'KCD 정서불안정성 인격장애 경계성형(F60.31)'),
+  (26, 'F90.0', 'Attention-deficit/hyperactivity disorder', '활동성 및 주의력 장애', '신경발달 (F80–F98)', 'KCD는 F90.0; ICD-10-CM 복합형은 F90.2'),
+  (27, 'F84.0', 'Autism spectrum disorder', '소아기 자폐증', '신경발달 (F80–F98)', 'DSM-5는 ASD로 통합; KCD는 F84.0(소아자폐)/F84.5(아스퍼거) 등 세분');
 
 commit;

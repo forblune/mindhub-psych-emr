@@ -260,11 +260,39 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await page.locator('.crumb-actions .btn.primary', { hasText: '신규 진료 시작' }).click()
     await expect(page.locator('.modal-card')).toBeVisible()
     await page.locator('.note-field', { hasText: '환자명' }).locator('input').fill('신규접수환자')
-    await page.locator('.note-field', { hasText: '진단 (F)' }).locator('input').fill('F41.0')
+    // 진단: DSM-5명으로 검색·선택 → ICD-10/KCD 코드 저장
+    await page.locator('.dx-search').fill('panic')
+    await page.locator('.dx-opt', { hasText: 'Panic disorder' }).click()
+    await expect(page.locator('.dx-selected')).toContainText('F41.0')
     await page.locator('.modal-card button[type="submit"]').click()
     await expect(page.locator('.modal-card')).toHaveCount(0)
     await expect(page.locator('.qrow')).toHaveCount(8)
     await expect(page.locator('.pt-id h2')).toHaveText('신규접수환자')
+  })
+
+  test('진단 선택 — DSM-5명/한글/코드 검색 → ICD-10(KCD) 저장', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.crumb-actions .btn.primary', { hasText: '신규 진료 시작' }).click()
+    await expect(page.locator('.modal-card')).toBeVisible()
+
+    // 한글 진단명으로 검색 → 범불안장애(F41.1) 1건
+    await page.locator('.dx-search').fill('범불안')
+    await expect(page.locator('.dx-opt')).toHaveCount(1)
+    await page.locator('.dx-opt', { hasText: 'Generalized anxiety' }).click()
+    await expect(page.locator('.dx-selected')).toContainText('F41.1')
+    await expect(page.locator('.dx-selected')).toContainText('범불안장애')
+
+    // 코드로도 검색 → ADHD는 KCD 기준 F90.0
+    await page.locator('.dx-search').fill('F90')
+    await expect(page.locator('.dx-opt')).toHaveCount(1)
+    await expect(page.locator('.dx-opt')).toContainText('활동성 및 주의력 장애')
+    await page.locator('.dx-opt', { hasText: 'Attention-deficit' }).click()
+    await expect(page.locator('.dx-selected')).toContainText('F90.0')
+
+    // 양극성 II형은 KCD 기준 F31.8 (ICD-10-CM의 F31.81 아님)
+    await page.locator('.dx-search').fill('Bipolar II')
+    await expect(page.locator('.dx-opt')).toContainText('F31.8')
+    await expect(page.locator('.dx-opt')).not.toContainText('F31.81')
   })
 
   test('대기열 행을 클릭하면 환자 패널이 바뀐다', async ({ page }) => {
