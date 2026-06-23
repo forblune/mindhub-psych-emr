@@ -93,7 +93,21 @@ env가 채워져 있으면 `data/api.js` 가 자동으로 Supabase 쿼리를 사
   - `doctor` : 본인이 담당(`patients.attending_id`)인 환자 + 그 환자의 모든 임상 데이터만 조회
   - `nurse` / `admin` : 전체 조회
 - 정책은 `app_role()` · `app_doctor_id()` · `owns_patient()` (security definer) 헬퍼로 평가 — `profiles` 자기참조 재귀를 회피.
-- **쓰기**: 노트 작성(`0003`)·처방 추가(`0004`)·수정/삭제(`0005`) 모두 `owns_patient(patient_id)` 으로 담당의 본인 환자에 한해 허용(insert는 with check, update/delete는 using + with check).
+- **쓰기**: 노트(`0003`)·처방(`0004`)·수정/삭제(`0005`)·척도/검사(`0006`,`0007`) 모두 `owns_patient(patient_id)` 으로 담당의 본인 환자에 한해 허용.
+
+### 권한 시연 (nurse/admin)
+`supabase/demo_roles.sql` 로 doctor·2번째 doctor·nurse·admin 을 세팅해 역할 차이를 직접 확인할 수 있습니다.
+앱에서 4개 계정 가입 → SQL Editor 에서 `demo_roles.sql` 실행 → 각 계정으로 로그인.
+
+로컬 PG16 검증 결과(같은 정책):
+
+| 역할 | 보이는 환자 | 강하늘(이준호 담당) 쓰기 |
+|---|---|---|
+| 의사 A (서연우) | 6명 (강하늘 제외) | 거부 |
+| 의사 B (이준호) | 1명 (강하늘) | 허용 |
+| 간호사 | 7명 전체 | 허용 |
+| 관리자 | 7명 전체 | 허용 |
+| 비로그인 | 0 (차단) | — |
 
 ## 데이터 모델
 
