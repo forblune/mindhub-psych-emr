@@ -111,6 +111,54 @@ export async function getKpis() {
   })
 }
 
+// ── 청구 · 수납 ─────────────────────────────────────────────────
+function billingSummary(rows) {
+  const sum = (f) => rows.filter(f).reduce((n, b) => n + b.copay, 0)
+  return {
+    total: rows.length,
+    paid: rows.filter((b) => b.status === '수납완료').length,
+    unpaid: rows.filter((b) => b.status === '미수납').length,
+    paidAmount: sum((b) => b.status === '수납완료'),
+    outstanding: sum((b) => b.status === '미수납'),
+  }
+}
+
+export async function getBillings() {
+  if (!isSupabaseConfigured) return mock.billings.map((b) => ({ ...b }))
+  const { data, error } = await supabase
+    .from('billings')
+    .select('id, sort, insurance, consult_fee, drug_fee, test_fee, copay, status, patient:patients(name, chart_no)')
+    .order('sort')
+  if (error) throw error
+  return data.map((b) => ({
+    id: b.id, name: b.patient?.name, chart: b.patient?.chart_no, insurance: b.insurance,
+    consult: b.consult_fee, drug: b.drug_fee, test: b.test_fee, copay: b.copay, status: b.status,
+  }))
+}
+
+export async function getBillingSummary() {
+  if (!isSupabaseConfigured) return billingSummary(mock.billings)
+  const { data, error } = await supabase.from('billing_summary').select('*').single()
+  if (error) throw error
+  return {
+    total: data.total, paid: data.paid, unpaid: data.unpaid,
+    paidAmount: data.paid_amount, outstanding: data.outstanding,
+  }
+}
+
+export function summarizeBilling(rows) {
+  return billingSummary(rows)
+}
+
+export async function markBillingPaid({ id }) {
+  if (!isSupabaseConfigured || !id) return
+  const { error } = await supabase
+    .from('billings')
+    .update({ status: '수납완료', paid_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw error
+}
+
 // ── 신규 환자 접수 (신규 진료 시작) ─────────────────────────────
 function nowHHMM() {
   const d = new Date()

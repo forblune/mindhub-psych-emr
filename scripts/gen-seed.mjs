@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
-import { clinic, doctor, kpis, schedule, queue, wards, admissions, apptPresentation } from '../src/data/mock.js'
+import { clinic, doctor, kpis, schedule, queue, wards, admissions, billings, apptPresentation } from '../src/data/mock.js'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const out = resolve(__dir, '../supabase/seed.sql')
@@ -23,7 +23,7 @@ w('-- 재생성:  node scripts/gen-seed.mjs')
 w('begin;')
 w('truncate clinics, doctors, patients, queue_entries, safety_assessments,')
 w('  rating_scales, trend_points, labs, prescriptions, clinical_notes,')
-w('  patient_detail_meta, appointments, kpis, wards, admissions restart identity cascade;')
+w('  patient_detail_meta, appointments, kpis, wards, admissions, billings restart identity cascade;')
 w()
 
 // clinic + doctor
@@ -132,6 +132,19 @@ for (let i = 0; i < queue.length; i++) {
   )
   w()
 }
+
+// billings (patients 생성 후) — attending = 시드 의사
+w(`-- ── 청구·수납 ──`)
+w(`insert into billings (sort, patient_id, attending_id, insurance, consult_fee, drug_fee, test_fee, copay, status) values`)
+w(
+  billings
+    .map(
+      (bl, i) =>
+        `  (${i}, (select id from patients where chart_no=${q(bl.chart)}), (select id from doctors order by ext_id limit 1), ${q(bl.insurance)}, ${n(bl.consult)}, ${n(bl.drug)}, ${n(bl.test)}, ${n(bl.copay)}, ${q(bl.status)})`
+    )
+    .join(',\n') + ';'
+)
+w()
 
 w('commit;')
 

@@ -108,6 +108,17 @@ export const admissions = [
   { ward: '4B', room: '404', bed: 'B', name: '강민재', sex: '남', age: 31, chart: '00640090', legal: '자의입원', status: '입원중', dx: 'F25.0', admittedOn: '2026-06-16', dayNo: 7, acuity: '일반', memo: '분열정동장애, 약물 유지' },
 ]
 
+// 청구·수납 (오늘 외래 환자 기준). copay = 본인부담금(수납 대상 금액)
+export const billings = [
+  { chart: '00513382', name: '정수민', insurance: '건강보험', consult: 12000, drug: 33800, test: 28000, copay: 22140, status: '수납완료' },
+  { chart: '00781120', name: '강하늘', insurance: '건강보험', consult: 24000, drug: 4830, test: 45000, copay: 22149, status: '미수납' },
+  { chart: '00822640', name: '임서윤', insurance: '건강보험', consult: 18000, drug: 0, test: 32000, copay: 15000, status: '미수납' },
+  { chart: '00339915', name: '한예린', insurance: '의료급여', consult: 12000, drug: 19200, test: 18000, copay: 1500, status: '수납완료' },
+  { chart: '00210073', name: '조민재', insurance: '의료급여', consult: 12000, drug: 16800, test: 22000, copay: 1500, status: '미수납' },
+  { chart: '00904471', name: '오지안', insurance: '건강보험', consult: 12000, drug: 28000, test: 12000, copay: 15600, status: '수납완료' },
+  { chart: '00118802', name: '백서진', insurance: '자비', consult: 12000, drug: 30000, test: 24000, copay: 66000, status: '미수납' },
+]
+
 // ── detail builders ──────────────────────────────────────────
 const QTC = (v, f = 'f-n') => ({ name: 'QTc (ECG)', val: v, ref: '<450 ms', flag: 'QTc', flagType: f })
 

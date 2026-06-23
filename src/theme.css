@@ -316,6 +316,10 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line-2);vertical-align:m
 .login-msg.ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok);}
 .login-foot{font-size:10px;color:var(--ink-3);text-align:center;margin:2px 0 0;}
 
+/* BILLING */
+.ta-r{text-align:right;}
+td.ta-r{font-variant-numeric:tabular-nums;}
+
 /* APPOINTMENTS */
 .appt-status{font-family:inherit;font-size:11px;color:var(--ink);background:var(--panel);
   border:1px solid var(--line);border-radius:6px;padding:3px 6px;}

@@ -96,6 +96,24 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
   })
 
+  test('청구·수납 — 수납 처리', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '청구 · 수납' }).click()
+    await expect(page.locator('.crumb h1')).toHaveText('청구 · 수납')
+    await expect(page.locator('tbody tr')).toHaveCount(7)
+
+    const unpaid = page
+      .locator('.kpi')
+      .filter({ has: page.locator('.lab', { hasText: '미수납' }) })
+      .locator('.val')
+    await expect(unpaid).toHaveText('4')
+
+    const row = page.locator('tbody tr', { hasText: '강하늘' })
+    await row.locator('.btn.primary', { hasText: '수납 처리' }).click()
+    await expect(row.locator('.badge')).toContainText('수납완료')
+    await expect(unpaid).toHaveText('3')
+  })
+
   test('예약 관리 — 상태 변경·추가·삭제', async ({ page }) => {
     await page.goto('/')
     await page.locator('.nav-item', { hasText: '예약 관리' }).click()

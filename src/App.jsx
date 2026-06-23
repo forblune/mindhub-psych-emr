@@ -10,6 +10,7 @@ import Ward from './components/Ward'
 import Stats from './components/Stats'
 import PatientSearch from './components/PatientSearch'
 import Appointments from './components/Appointments'
+import Billing from './components/Billing'
 import NewVisit from './components/NewVisit'
 import Login from './components/Login'
 import { useAuth } from './context/AuthContext'
@@ -45,15 +46,20 @@ import {
   deleteLab,
   updateLab,
   startVisit,
+  getBillings,
+  getBillingSummary,
+  markBillingPaid,
+  summarizeBilling,
 } from './data/api'
 
 async function loadAll() {
-  const [clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary] =
+  const [clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary] =
     await Promise.all([
       getClinic(), getDoctor(), getKpis(), getNavGroups(), getQueue(),
       getSchedule(), getSystemStatus(), getWards(), getAdmissions(), getWardSummary(),
+      getBillings(), getBillingSummary(),
     ])
-  return { clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary }
+  return { clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary, billings, billingSummary }
 }
 
 export default function App() {
@@ -319,6 +325,14 @@ export default function App() {
     setSlots(data.schedule.slots.filter((_, i) => i !== index))
   }
 
+  async function handleMarkPaid(index) {
+    const bl = data.billings[index]
+    if (!bl) return
+    await markBillingPaid({ id: bl.id })
+    const next = data.billings.map((b, i) => (i === index ? { ...b, status: '수납완료' } : b))
+    setData((prev) => ({ ...prev, billings: next, billingSummary: summarizeBilling(next) }))
+  }
+
   async function refresh() {
     setRefreshing(true)
     try {
@@ -372,6 +386,8 @@ export default function App() {
           onSetStatus={handleSetApptStatus}
           onDelete={handleDeleteAppt}
         />
+      ) : view === 'billing' ? (
+        <Billing billings={data.billings} summary={data.billingSummary} onMarkPaid={handleMarkPaid} />
       ) : view === 'search' ? (
         <PatientSearch
           queue={data.queue}

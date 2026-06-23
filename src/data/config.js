@@ -23,7 +23,7 @@ export const navGroups = [
   {
     title: '운영',
     items: [
-      { icon: 'card', label: '청구 · 수납' },
+      { icon: 'card', label: '청구 · 수납', view: 'billing' },
       { icon: 'box', label: '약품 · 재고', count: 2, crit: true },
       { icon: 'bars', label: '통계 · 지표', view: 'stats' },
       { icon: 'gear', label: '설정' },
