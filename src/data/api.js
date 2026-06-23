@@ -129,18 +129,59 @@ export async function getAdmissions() {
   }
   const { data, error } = await supabase
     .from('admissions')
-    .select('sort, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo, ward:wards(code, name)')
+    .select('id, sort, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo, ward:wards(code, name)')
     .order('sort')
   if (error) throw error
-  return data.map((a) => ({
-    ward: a.ward?.code, wardName: a.ward?.name, room: a.room, bed: a.bed,
+  return data.map(mapAdmission)
+}
+
+function mapAdmission(a) {
+  return {
+    id: a.id, ward: a.ward?.code, wardName: a.ward?.name, room: a.room, bed: a.bed,
     name: a.patient_name, sex: a.sex, age: a.age, chart: a.chart_no,
     legal: a.legal_status, status: a.status, dx: a.dx,
     admittedOn: a.admitted_on, dayNo: a.day_no, acuity: a.acuity, memo: a.memo,
-  }))
+  }
 }
 
-function wardSummary(wards, adms) {
+// Inpatient admit / edit / discharge. `a` uses the UI admission shape.
+export async function addAdmission({ a }) {
+  if (!isSupabaseConfigured) return { ...a }
+  const { data: w, error: we } = await supabase.from('wards').select('id').eq('code', a.ward).single()
+  if (we) throw we
+  const { data, error } = await supabase
+    .from('admissions')
+    .insert({
+      ward_id: w.id, patient_name: a.name, sex: a.sex, age: a.age, chart_no: a.chart,
+      room: a.room, bed: a.bed, legal_status: a.legal, status: a.status, dx: a.dx,
+      admitted_on: a.admittedOn, day_no: a.dayNo, acuity: a.acuity, memo: a.memo,
+      // attending_id 는 트리거가 현재 사용자로 설정
+    })
+    .select('id, sort, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo, ward:wards(code, name)')
+    .single()
+  if (error) throw error
+  return mapAdmission(data)
+}
+
+export async function updateAdmission({ id, fields }) {
+  if (!isSupabaseConfigured || !id) return
+  const { error } = await supabase
+    .from('admissions')
+    .update({
+      room: fields.room, bed: fields.bed, legal_status: fields.legal,
+      status: fields.status, dx: fields.dx, acuity: fields.acuity, memo: fields.memo,
+    })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteAdmission({ id }) {
+  if (!isSupabaseConfigured || !id) return
+  const { error } = await supabase.from('admissions').delete().eq('id', id)
+  if (error) throw error
+}
+
+export function summarizeWard(wards, adms) {
   const totalBeds = wards.reduce((n, w) => n + (w.total_beds || 0), 0)
   return {
     totalBeds,
@@ -153,7 +194,7 @@ function wardSummary(wards, adms) {
 }
 
 export async function getWardSummary() {
-  if (!isSupabaseConfigured) return wardSummary(mock.wards, mock.admissions)
+  if (!isSupabaseConfigured) return summarizeWard(mock.wards, mock.admissions)
   const { data, error } = await supabase.from('ward_summary').select('*').single()
   if (error) throw error
   return {

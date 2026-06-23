@@ -21,6 +21,10 @@ import {
   getWards,
   getAdmissions,
   getWardSummary,
+  addAdmission,
+  updateAdmission,
+  deleteAdmission,
+  summarizeWard,
   addNote,
   addPrescription,
   updateNote,
@@ -236,6 +240,32 @@ export default function App() {
     }))
   }
 
+  // ── 입원 CRUD ──
+  function setAdmissions(next) {
+    setData((prev) => ({
+      ...prev,
+      admissions: next,
+      wardSummary: summarizeWard(prev.wards, next),
+      kpis: prev.kpis.map((k) => (k.label === '담당 입원' ? { ...k, value: String(next.length) } : k)),
+    }))
+  }
+  async function handleAddAdmission(a) {
+    const created = await addAdmission({ a })
+    setAdmissions([...data.admissions, created])
+  }
+  async function handleUpdateAdmission(index, fields) {
+    const adm = data.admissions[index]
+    if (!adm) return
+    await updateAdmission({ id: adm.id, fields })
+    setAdmissions(data.admissions.map((it, i) => (i === index ? { ...it, ...fields } : it)))
+  }
+  async function handleDeleteAdmission(index) {
+    const adm = data.admissions[index]
+    if (!adm) return
+    await deleteAdmission({ id: adm.id })
+    setAdmissions(data.admissions.filter((_, i) => i !== index))
+  }
+
   if (loading) return null
   if (isSupabaseConfigured && !session) return <Login />
   if (!data) return null
@@ -247,7 +277,14 @@ export default function App() {
       <TopBar clinic={data.clinic} doctor={data.doctor} search={search} onSearch={setSearch} />
       <Sidebar navGroups={data.navGroups} systemStatus={data.systemStatus} view={view} onNavigate={setView} />
       {view === 'ward' ? (
-        <Ward wards={data.wards} admissions={data.admissions} summary={data.wardSummary} />
+        <Ward
+          wards={data.wards}
+          admissions={data.admissions}
+          summary={data.wardSummary}
+          onAddAdmission={handleAddAdmission}
+          onUpdateAdmission={handleUpdateAdmission}
+          onDeleteAdmission={handleDeleteAdmission}
+        />
       ) : (
       <main className="main">
         <div className="crumb">

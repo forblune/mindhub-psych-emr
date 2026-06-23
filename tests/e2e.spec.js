@@ -67,6 +67,35 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.crumb h1')).toHaveText('진료 대시보드')
   })
 
+  test('입원 CRUD — 입원 등록 후 퇴원', async ({ page }) => {
+    page.on('dialog', (d) => d.accept())
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '입원 · 폐쇄병동' }).click()
+    await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
+
+    // 입원 등록
+    await page.locator('.crumb-actions .btn.primary', { hasText: '입원 등록' }).click()
+    await expect(page.locator('.ward-form')).toBeVisible()
+    await page.locator('.note-field', { hasText: '환자명' }).locator('input').fill('테스트환자')
+    await page.locator('.note-field', { hasText: '차트번호' }).locator('input').fill('00640999')
+    await page.locator('.note-field', { hasText: '진단 (F)' }).locator('input').fill('F41.1')
+    const rb = page.locator('.note-field', { hasText: '병실 / 병상' }).locator('input')
+    await rb.nth(0).fill('507')
+    await rb.nth(1).fill('A')
+    await page.locator('.ward-form button[type="submit"]').click()
+
+    await expect(page.locator('.ward-list tbody tr')).toHaveCount(10)
+    const rewon = page
+      .locator('.kpi')
+      .filter({ has: page.locator('.lab', { hasText: '재원 환자' }) })
+      .locator('.val')
+    await expect(rewon).toHaveText('10')
+
+    // 퇴원
+    await page.locator('.ward-list tbody tr', { hasText: '테스트환자' }).locator('.row-act.danger').click()
+    await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
+  })
+
   test('대기열 행을 클릭하면 환자 패널이 바뀐다', async ({ page }) => {
     await page.goto('/')
     await page.locator('.qrow', { hasText: '강하늘' }).click()

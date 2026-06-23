@@ -209,7 +209,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line-2);vertical-align:m
 .note-field select:focus{outline:none;border-color:var(--accent);}
 .lab-del{padding:0;width:18px;height:18px;display:grid;place-items:center;font-size:13px;line-height:1;}
 .lab-editing td{background:var(--accent-soft);}
-.note-field input:disabled{opacity:.55;cursor:not-allowed;}
+.note-field input:disabled,.note-field select:disabled{opacity:.55;cursor:not-allowed;}
+.ward-form{margin:11px 13px 0;}
 .scale .st{display:flex;justify-content:space-between;align-items:baseline;}
 .scale .sn{font-size:11px;font-weight:700;}
 .scale .sn small{font-weight:500;color:var(--ink-3);font-size:10px;}
