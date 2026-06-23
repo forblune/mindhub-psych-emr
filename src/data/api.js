@@ -64,21 +64,48 @@ export async function getDoctor() {
   return { name: data.name, title: data.title, id: data.ext_id, initial: data.initial }
 }
 
+// Shape the raw aggregate counts into the 6 KPI cards.
+function kpiCards(r) {
+  return [
+    { tone: 't-acc', label: '금일 예약', value: String(r.apptTotal), sub: `완료 ${r.apptDone} · 잔여 ${r.apptTotal - r.apptDone}` },
+    { tone: 't-warn', label: '대기 환자', value: String(r.waiting), sub: `금일 내원 ${r.visitsToday}` },
+    { tone: 't-acc', label: '상담 중', value: String(r.inConsult), sub: '진행 중' },
+    { tone: 't-crit', label: '고위험 환자', value: String(r.highRisk), sub: '중등도', delta: String(r.midRisk), deltaTone: 'dn' },
+    { tone: 't-ok', label: '금일 내원', value: String(r.visitsToday), sub: `대기 ${r.waiting}` },
+    { tone: 't-warn', label: '신규 처방', value: String(r.newRx), sub: '검토 대기' },
+  ]
+}
+
+// Mock-mode: compute the same aggregates the SQL view computes.
+function computeKpiRaw(queue, schedule) {
+  const slots = schedule.slots || []
+  const inSet = (s) => ['대기', '신규', '위기'].includes(s)
+  return {
+    apptTotal: slots.length,
+    apptDone: slots.filter((s) => s.badge?.cls === 'b-done').length,
+    waiting: queue.filter((p) => inSet(p.status)).length,
+    inConsult: queue.filter((p) => p.status === '상담중').length,
+    visitsToday: queue.length,
+    highRisk: queue.filter((p) => p.risk === 'hi').length,
+    midRisk: queue.filter((p) => p.risk === 'md').length,
+    newRx: queue.reduce((n, p) => n + (p.detail?.rx?.items || []).filter((r) => r.isNew).length, 0),
+  }
+}
+
 export async function getKpis() {
-  if (!isSupabaseConfigured) return mock.kpis
-  const { data, error } = await supabase
-    .from('kpis')
-    .select('sort, tone, label, value, sub, delta, delta_tone')
-    .order('sort')
+  if (!isSupabaseConfigured) return kpiCards(computeKpiRaw(mock.queue, mock.schedule))
+  const { data, error } = await supabase.from('dashboard_kpis').select('*').single()
   if (error) throw error
-  return data.map((k) => ({
-    tone: k.tone,
-    label: k.label,
-    value: k.value,
-    sub: k.sub,
-    delta: k.delta ?? undefined,
-    deltaTone: k.delta_tone ?? undefined,
-  }))
+  return kpiCards({
+    apptTotal: data.appt_total,
+    apptDone: data.appt_done,
+    waiting: data.waiting,
+    inConsult: data.in_consult,
+    visitsToday: data.visits_today,
+    highRisk: data.high_risk,
+    midRisk: data.mid_risk,
+    newRx: data.new_rx,
+  })
 }
 
 export async function getSchedule() {

@@ -33,6 +33,16 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     expect(errors, '콘솔 에러 없음').toEqual([])
   })
 
+  test('KPI는 데이터에서 집계된다(대기 6·상담중 1·금일 내원 7)', async ({ page }) => {
+    await page.goto('/')
+    const kpi = (label) =>
+      page.locator('.kpi').filter({ has: page.locator('.lab', { hasText: label }) }).locator('.val')
+    await expect(kpi('대기 환자')).toHaveText('6')
+    await expect(kpi('상담 중')).toHaveText('1')
+    await expect(kpi('금일 내원')).toHaveText('7')
+    await expect(kpi('고위험 환자')).toHaveText('1')
+  })
+
   test('대기열 행을 클릭하면 환자 패널이 바뀐다', async ({ page }) => {
     await page.goto('/')
     await page.locator('.qrow', { hasText: '강하늘' }).click()

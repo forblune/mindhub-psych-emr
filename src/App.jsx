@@ -73,8 +73,8 @@ export default function App() {
     const refetch = () => {
       clearTimeout(timer)
       timer = setTimeout(() => {
-        getQueue()
-          .then((q) => setData((prev) => (prev ? { ...prev, queue: q } : prev)))
+        Promise.all([getQueue(), getKpis()])
+          .then(([q, kpis]) => setData((prev) => (prev ? { ...prev, queue: q, kpis } : prev)))
           .catch(() => {})
       }, 300)
     }
