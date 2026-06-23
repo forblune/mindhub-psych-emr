@@ -8,7 +8,7 @@ import PatientDetail from './components/PatientDetail'
 import Schedule from './components/Schedule'
 import Login from './components/Login'
 import { useAuth } from './context/AuthContext'
-import { isSupabaseConfigured } from './lib/supabase'
+import { isSupabaseConfigured, supabase } from './lib/supabase'
 import {
   getClinic,
   getDoctor,
@@ -36,6 +36,7 @@ export default function App() {
   const [data, setData] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [search, setSearch] = useState('')
+  const [realtimeOn, setRealtimeOn] = useState(false)
 
   // With Supabase, RLS needs an authenticated session before any read.
   const authed = !isSupabaseConfigured || Boolean(session)
@@ -63,6 +64,30 @@ export default function App() {
       active = false
     }
   }, [authed])
+
+  // Realtime: auto-refresh the queue when queue_entries change (Supabase only).
+  // RLS filters events so a doctor only receives their own patients' changes.
+  useEffect(() => {
+    if (!isSupabaseConfigured || !session) return
+    let timer
+    const refetch = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        getQueue()
+          .then((q) => setData((prev) => (prev ? { ...prev, queue: q } : prev)))
+          .catch(() => {})
+      }, 300)
+    }
+    const channel = supabase
+      .channel('queue-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_entries' }, refetch)
+      .subscribe((status) => setRealtimeOn(status === 'SUBSCRIBED'))
+    return () => {
+      clearTimeout(timer)
+      setRealtimeOn(false)
+      supabase.removeChannel(channel)
+    }
+  }, [session])
 
   async function handleAddNote(chart, segments) {
     const item = data.queue.find((p) => p.chart === chart)
@@ -237,6 +262,7 @@ export default function App() {
             selectedId={selectedId}
             onSelect={setSelectedId}
             search={search}
+            live={realtimeOn}
           />
           <PatientDetail
             patient={selected}

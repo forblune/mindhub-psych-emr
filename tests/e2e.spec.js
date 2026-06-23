@@ -27,6 +27,9 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     // 추이 차트 canvas 존재
     await expect(page.locator('.trend-card canvas')).toBeVisible()
 
+    // mock 모드(Supabase 미설정)에선 실시간 배지가 없어야 함
+    await expect(page.locator('.live-badge')).toHaveCount(0)
+
     expect(errors, '콘솔 에러 없음').toEqual([])
   })
 

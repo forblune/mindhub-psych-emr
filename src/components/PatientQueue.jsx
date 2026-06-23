@@ -30,7 +30,7 @@ function matches(p, query) {
   return [p.name, p.chart, p.dx, p.rrn].some((v) => String(v || '').toLowerCase().includes(s))
 }
 
-export default function PatientQueue({ patients, selectedId, onSelect, search = '' }) {
+export default function PatientQueue({ patients, selectedId, onSelect, search = '', live = false }) {
   const [sort, setSort] = useState('대기순')
   const sorts = ['대기순', '접수순', '위험도']
 
@@ -45,6 +45,12 @@ export default function PatientQueue({ patients, selectedId, onSelect, search = 
     <section className="card queue">
       <div className="hd">
         <h3>진료 대기열</h3>
+        {live && (
+          <span className="live-badge" title="실시간 동기화 중">
+            <span className="live-dot" />
+            실시간
+          </span>
+        )}
         <span className="meta">
           {q ? `"${q}" — ${view.length}건` : `${patients.length}명 대기 · 12:41`}
         </span>
