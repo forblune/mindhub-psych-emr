@@ -96,6 +96,31 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
   })
 
+  test('환자 검색 — 통합 검색 후 열기로 이동', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '환자 검색' }).click()
+    await expect(page.locator('.crumb h1')).toHaveText('환자 검색')
+
+    // 외래 7 + 입원 9 = 16
+    await expect(page.locator('tbody tr')).toHaveCount(16)
+
+    // 이름 검색
+    await page.locator('.search-input input').fill('강하늘')
+    await expect(page.locator('tbody tr')).toHaveCount(1)
+
+    // 열기 → 대시보드로 이동하며 해당 환자 선택
+    await page.locator('tbody tr', { hasText: '강하늘' }).locator('.row-act').click()
+    await expect(page.locator('.crumb h1')).toHaveText('진료 대시보드')
+    await expect(page.locator('.pt-id h2')).toHaveText('강하늘')
+  })
+
+  test('환자 검색 — 입원 환자 필터', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '환자 검색' }).click()
+    await page.locator('.search-bar .seg button', { hasText: '입원' }).click()
+    await expect(page.locator('tbody tr')).toHaveCount(9)
+  })
+
   test('통계 지표 — 네비게이션·집계 카드', async ({ page }) => {
     await page.goto('/')
     await page.locator('.nav-item', { hasText: '통계 · 지표' }).click()

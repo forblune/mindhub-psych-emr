@@ -8,6 +8,7 @@ import PatientDetail from './components/PatientDetail'
 import Schedule from './components/Schedule'
 import Ward from './components/Ward'
 import Stats from './components/Stats'
+import PatientSearch from './components/PatientSearch'
 import NewVisit from './components/NewVisit'
 import Login from './components/Login'
 import { useAuth } from './context/AuthContext'
@@ -330,6 +331,16 @@ export default function App() {
         />
       ) : view === 'stats' ? (
         <Stats queue={data.queue} admissions={data.admissions} wards={data.wards} />
+      ) : view === 'search' ? (
+        <PatientSearch
+          queue={data.queue}
+          admissions={data.admissions}
+          initialQuery={search}
+          onOpen={(targetView, chart) => {
+            if (chart) setSelectedId(chart)
+            setView(targetView)
+          }}
+        />
       ) : (
       <main className="main">
         <div className="crumb">
