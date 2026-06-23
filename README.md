@@ -67,7 +67,8 @@ Supabase 대시보드 **SQL Editor** 에 순서대로 붙여넣고 실행:
 10) supabase/migrations/0010_ward.sql      # 입원·병동(wards/admissions) + RLS + 집계 뷰
 11) supabase/migrations/0011_admission_write.sql # 입원 등록·수정·퇴원 RLS + attending 트리거
 12) supabase/migrations/0012_patient_intake.sql  # 신규 환자 접수(환자/대기열/안전성 insert) RLS + 트리거
-13) supabase/seed.sql                      # 데모 데이터(담당의 연결 포함)
+13) supabase/migrations/0013_realtime_expand.sql # Realtime 확장(노트/처방/입원 publication)
+14) supabase/seed.sql                      # 데모 데이터(담당의 연결 포함)
 ```
 (또는 Supabase CLI: `supabase db push` 후 `psql ... -f supabase/seed.sql`)
 

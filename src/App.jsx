@@ -79,25 +79,42 @@ export default function App() {
     }
   }, [authed])
 
-  // Realtime: auto-refresh the queue when queue_entries change (Supabase only).
-  // RLS filters events so a doctor only receives their own patients' changes.
+  // Realtime: auto-refresh on changes (Supabase only). RLS filters events so a
+  // doctor only receives their own patients' changes.
+  //  • queue/notes/prescriptions → reload queue(+detail) + KPIs
+  //  • admissions → reload ward + KPIs
   useEffect(() => {
     if (!isSupabaseConfigured || !session) return
-    let timer
-    const refetch = () => {
-      clearTimeout(timer)
-      timer = setTimeout(() => {
+    let t1, t2
+    const refetchDash = () => {
+      clearTimeout(t1)
+      t1 = setTimeout(() => {
         Promise.all([getQueue(), getKpis()])
-          .then(([q, kpis]) => setData((prev) => (prev ? { ...prev, queue: q, kpis } : prev)))
+          .then(([queue, kpis]) => setData((prev) => (prev ? { ...prev, queue, kpis } : prev)))
           .catch(() => {})
       }, 300)
     }
+    const refetchWard = () => {
+      clearTimeout(t2)
+      t2 = setTimeout(() => {
+        Promise.all([getAdmissions(), getWardSummary(), getKpis()])
+          .then(([admissions, wardSummary, kpis]) =>
+            setData((prev) => (prev ? { ...prev, admissions, wardSummary, kpis } : prev))
+          )
+          .catch(() => {})
+      }, 300)
+    }
+    const pc = (table, fn) => ['postgres_changes', { event: '*', schema: 'public', table }, fn]
     const channel = supabase
-      .channel('queue-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_entries' }, refetch)
+      .channel('realtime-changes')
+      .on(...pc('queue_entries', refetchDash))
+      .on(...pc('clinical_notes', refetchDash))
+      .on(...pc('prescriptions', refetchDash))
+      .on(...pc('admissions', refetchWard))
       .subscribe((status) => setRealtimeOn(status === 'SUBSCRIBED'))
     return () => {
-      clearTimeout(timer)
+      clearTimeout(t1)
+      clearTimeout(t2)
       setRealtimeOn(false)
       supabase.removeChannel(channel)
     }
