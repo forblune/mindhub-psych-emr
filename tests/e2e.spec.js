@@ -106,6 +106,23 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(top).toContainText('E2E 테스트 경과 기록')
   })
 
+  test('처방 추가 — 입력 후 처방 목록에 반영', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.tab', { hasText: '처방·오더' }).click()
+
+    const before = await page.locator('.rx').count()
+
+    await page.locator('.note-add-btn', { hasText: '처방 추가' }).click()
+    await expect(page.locator('.note-form')).toBeVisible()
+    await page.locator('.note-field', { hasText: '약물명' }).locator('input').fill('설트랄린 50mg')
+    await page.locator('.note-field', { hasText: '용법' }).locator('input').fill('1일 1회 1정 · 아침')
+    await page.locator('.note-form button[type="submit"]').click()
+
+    await expect(page.locator('.rx')).toHaveCount(before + 1)
+    await expect(page.locator('.rx').last()).toContainText('설트랄린 50mg')
+    await expect(page.locator('.rx').last()).toHaveClass(/new/)
+  })
+
   test('정렬 — 위험도순은 고위험을 맨 위로', async ({ page }) => {
     await page.goto('/')
 

@@ -11,7 +11,7 @@ const TABS = [
   { key: 'note', label: '경과·면담', Comp: NotesTab },
 ]
 
-export default function PatientDetail({ patient, onAddNote }) {
+export default function PatientDetail({ patient, onAddNote, onAddRx }) {
   const [tab, setTab] = useState('sc')
   if (!patient) return null
   const Active = TABS.find((t) => t.key === tab).Comp
@@ -58,6 +58,7 @@ export default function PatientDetail({ patient, onAddNote }) {
         <Active
           detail={patient.detail}
           onAddNote={(segments) => onAddNote(patient.chart, segments)}
+          onAddRx={(rx) => onAddRx(patient.chart, rx)}
           key={patient.chart + tab}
         />
       </div>

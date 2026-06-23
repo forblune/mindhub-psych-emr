@@ -58,7 +58,8 @@ Supabase 대시보드 **SQL Editor** 에 순서대로 붙여넣고 실행:
 1) supabase/migrations/0001_init.sql      # 테이블 + 인덱스
 2) supabase/migrations/0002_auth_rls.sql  # 프로필 + 역할 기반 RLS + 트리거
 3) supabase/migrations/0003_note_write.sql # 노트 쓰기 정책
-4) supabase/seed.sql                       # 데모 데이터(담당의 연결 포함)
+4) supabase/migrations/0004_rx_write.sql   # 처방 쓰기 정책
+5) supabase/seed.sql                       # 데모 데이터(담당의 연결 포함)
 ```
 (또는 Supabase CLI: `supabase db push` 후 `psql ... -f supabase/seed.sql`)
 
@@ -88,7 +89,7 @@ env가 채워져 있으면 `data/api.js` 가 자동으로 Supabase 쿼리를 사
   - `doctor` : 본인이 담당(`patients.attending_id`)인 환자 + 그 환자의 모든 임상 데이터만 조회
   - `nurse` / `admin` : 전체 조회
 - 정책은 `app_role()` · `app_doctor_id()` · `owns_patient()` (security definer) 헬퍼로 평가 — `profiles` 자기참조 재귀를 회피.
-- **쓰기**: 노트 작성은 `0003_note_write.sql` 의 insert 정책으로 담당의 본인 환자에 한해 허용. 처방 쓰기는 같은 패턴으로 확장 가능.
+- **쓰기**: 노트 작성(`0003`)·처방 추가(`0004`) 모두 insert 정책 `with check (owns_patient(patient_id))` 으로 담당의 본인 환자에 한해 허용.
 
 ## 데이터 모델
 

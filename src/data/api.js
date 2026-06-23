@@ -231,6 +231,52 @@ export async function addNote({ patientId, chart, author, dept, segments }) {
   return { author: data.author, dept: data.dept, datetime: data.noted_at, segments: data.segments }
 }
 
+// Create a prescription. Returns it in the UI's rx-item shape.
+export async function addPrescription({ patientId, chart, rx }) {
+  if (!isSupabaseConfigured) {
+    return { isNew: true, ...rx } // mock: in-memory only
+  }
+
+  let pid = patientId
+  if (!pid) {
+    const { data: p, error } = await supabase.from('patients').select('id').eq('chart_no', chart).single()
+    if (error) throw error
+    pid = p.id
+  }
+
+  const { data, error } = await supabase
+    .from('prescriptions')
+    .insert({
+      patient_id: pid,
+      sort: Date.now(), // append to end of list
+      drug_class: rx.klass,
+      class_warn: rx.klassWarn ?? false,
+      name: rx.name,
+      brand: rx.brand ?? '',
+      dose: rx.dose,
+      sub: rx.sub ?? '',
+      sub_bold: rx.subBold ?? '',
+      qty: rx.qty ?? '',
+      price: rx.price ?? '',
+      is_new: rx.isNew ?? true,
+    })
+    .select('drug_class, class_warn, name, brand, dose, sub, sub_bold, qty, price, is_new')
+    .single()
+  if (error) throw error
+  return {
+    klass: data.drug_class,
+    klassWarn: data.class_warn,
+    name: data.name,
+    brand: data.brand,
+    dose: data.dose,
+    sub: data.sub,
+    subBold: data.sub_bold,
+    qty: data.qty,
+    price: data.price,
+    isNew: data.is_new,
+  }
+}
+
 // flatten lab rows back into ordered [{ group, rows: [...] }]
 function groupLabs(rows) {
   const groups = []
