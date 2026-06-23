@@ -1,13 +1,17 @@
 import Icon from './Icon'
 
-export default function Sidebar({ navGroups, systemStatus }) {
+export default function Sidebar({ navGroups, systemStatus, view, onNavigate }) {
   return (
     <aside className="side">
       {navGroups.map((group) => (
         <div className="nav-group" key={group.title}>
           <h6>{group.title}</h6>
           {group.items.map((item) => (
-            <button className={`nav-item${item.active ? ' on' : ''}`} key={item.label}>
+            <button
+              className={`nav-item${item.view && item.view === view ? ' on' : ''}`}
+              key={item.label}
+              onClick={() => item.view && onNavigate(item.view)}
+            >
               <Icon name={item.icon} />
               {item.label}
               {item.count != null && <span className={`ct${item.crit ? ' crit' : ''}`}>{item.count}</span>}

@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
-import { clinic, doctor, kpis, schedule, queue } from '../src/data/mock.js'
+import { clinic, doctor, kpis, schedule, queue, wards, admissions } from '../src/data/mock.js'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const out = resolve(__dir, '../supabase/seed.sql')
@@ -23,7 +23,7 @@ w('-- 재생성:  node scripts/gen-seed.mjs')
 w('begin;')
 w('truncate clinics, doctors, patients, queue_entries, safety_assessments,')
 w('  rating_scales, trend_points, labs, prescriptions, clinical_notes,')
-w('  patient_detail_meta, appointments, kpis restart identity cascade;')
+w('  patient_detail_meta, appointments, kpis, wards, admissions restart identity cascade;')
 w()
 
 // clinic + doctor
@@ -50,6 +50,23 @@ w(
     .map(
       (s, i) =>
         `  (${i}, ${q(s.time)}, ${q(s.name)}, ${q(s.desc)}, ${q(s.bar)}, ${q(s.badge?.cls ?? null)}, ${q(s.badge?.label ?? null)}, ${q(s.tail ?? null)}, ${b(s.now)})`
+    )
+    .join(',\n') + ';'
+)
+w()
+
+// wards
+w(`insert into wards (sort, code, name, total_beds) values`)
+w(wards.map((wd, i) => `  (${i}, ${q(wd.code)}, ${q(wd.name)}, ${n(wd.total_beds)})`).join(',\n') + ';')
+w()
+
+// admissions (attending = 시드 의사)
+w(`insert into admissions (sort, ward_id, attending_id, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo) values`)
+w(
+  admissions
+    .map(
+      (a, i) =>
+        `  (${i}, (select id from wards where code=${q(a.ward)}), (select id from doctors order by ext_id limit 1), ${q(a.name)}, ${q(a.sex)}, ${n(a.age)}, ${q(a.chart)}, ${q(a.room)}, ${q(a.bed)}, ${q(a.legal)}, ${q(a.status)}, ${q(a.dx)}, ${q(a.admittedOn)}, ${n(a.dayNo)}, ${q(a.acuity)}, ${q(a.memo)})`
     )
     .join(',\n') + ';'
 )

@@ -5,7 +5,7 @@ export const navGroups = [
   {
     title: '진료',
     items: [
-      { icon: 'dashboard', label: '진료 대시보드', active: true },
+      { icon: 'dashboard', label: '진료 대시보드', view: 'dashboard' },
       { icon: 'user', label: '환자 검색' },
       { icon: 'calendar', label: '예약 관리', count: 26 },
       { icon: 'checklist', label: '진료 대기열', count: 7 },
@@ -17,7 +17,7 @@ export const navGroups = [
       { icon: 'pill', label: '처방 · 오더' },
       { icon: 'chart', label: '심리평가 · 척도', count: 5, crit: true },
       { icon: 'chat', label: '상담 · 면담 기록' },
-      { icon: 'hospital', label: '입원 · 폐쇄병동', count: 9 },
+      { icon: 'hospital', label: '입원 · 폐쇄병동', count: 9, view: 'ward' },
     ],
   },
   {

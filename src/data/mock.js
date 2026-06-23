@@ -78,6 +78,24 @@ export const schedule = {
   ],
 }
 
+export const wards = [
+  { code: '5A', name: '폐쇄병동 5A', total_beds: 12 },
+  { code: '4B', name: '개방병동 4B', total_beds: 8 },
+]
+
+// 입원 환자 (병동 보드). attending = 시드 의사(서연우).
+export const admissions = [
+  { ward: '5A', room: '501', bed: 'A', name: '문상철', sex: '남', age: 49, chart: '00640012', legal: '보호입원', status: '격리', dx: 'F20.0', admittedOn: '2026-06-18', dayNo: 5, acuity: '중증', memo: '급성 정신병적 흥분, 격리·관찰 중' },
+  { ward: '5A', room: '501', bed: 'B', name: '김하나', sex: '여', age: 33, chart: '00640021', legal: '자의입원', status: '입원중', dx: 'F31.2', admittedOn: '2026-06-15', dayNo: 8, acuity: '주의', memo: '조증 삽화, 리튬 적정 중' },
+  { ward: '5A', room: '503', bed: 'A', name: '이도경', sex: '남', age: 27, chart: '00640033', legal: '행정입원', status: '관찰', dx: 'F32.2', admittedOn: '2026-06-20', dayNo: 3, acuity: '중증', memo: '자살시도 후 입원, 1:1 관찰' },
+  { ward: '5A', room: '503', bed: 'B', name: '박서연', sex: '여', age: 41, chart: '00640048', legal: '자의입원', status: '입원중', dx: 'F33.2', admittedOn: '2026-06-12', dayNo: 11, acuity: '주의', memo: '주요우울 재발, 약물 조정' },
+  { ward: '5A', room: '505', bed: 'A', name: '정우진', sex: '남', age: 55, chart: '00640052', legal: '보호입원', status: '입원중', dx: 'F10.2', admittedOn: '2026-06-10', dayNo: 13, acuity: '일반', memo: '알코올 해독 후 재활' },
+  { ward: '4B', room: '402', bed: 'A', name: '한지민', sex: '여', age: 22, chart: '00640066', legal: '자의입원', status: '퇴원예정', dx: 'F50.0', admittedOn: '2026-06-05', dayNo: 18, acuity: '일반', memo: '섭식장애, 체중 회복·퇴원 계획' },
+  { ward: '4B', room: '402', bed: 'B', name: '오세영', sex: '남', age: 36, chart: '00640071', legal: '자의입원', status: '입원중', dx: 'F41.1', admittedOn: '2026-06-17', dayNo: 6, acuity: '일반', memo: '범불안·공황, 인지행동치료 병행' },
+  { ward: '4B', room: '404', bed: 'A', name: '신예지', sex: '여', age: 29, chart: '00640085', legal: '자의입원', status: '입원중', dx: 'F60.3', admittedOn: '2026-06-14', dayNo: 9, acuity: '주의', memo: '경계성 인격, 변증법적행동치료' },
+  { ward: '4B', room: '404', bed: 'B', name: '강민재', sex: '남', age: 31, chart: '00640090', legal: '자의입원', status: '입원중', dx: 'F25.0', admittedOn: '2026-06-16', dayNo: 7, acuity: '일반', memo: '분열정동장애, 약물 유지' },
+]
+
 // ── detail builders ──────────────────────────────────────────
 const QTC = (v, f = 'f-n') => ({ name: 'QTc (ECG)', val: v, ref: '<450 ms', flag: 'QTc', flagType: f })
 

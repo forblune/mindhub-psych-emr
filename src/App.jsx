@@ -6,6 +6,7 @@ import KpiStrip from './components/KpiStrip'
 import PatientQueue from './components/PatientQueue'
 import PatientDetail from './components/PatientDetail'
 import Schedule from './components/Schedule'
+import Ward from './components/Ward'
 import Login from './components/Login'
 import { useAuth } from './context/AuthContext'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
@@ -17,6 +18,9 @@ import {
   getQueue,
   getSchedule,
   getSystemStatus,
+  getWards,
+  getAdmissions,
+  getWardSummary,
   addNote,
   addPrescription,
   updateNote,
@@ -37,6 +41,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [search, setSearch] = useState('')
   const [realtimeOn, setRealtimeOn] = useState(false)
+  const [view, setView] = useState('dashboard')
 
   // With Supabase, RLS needs an authenticated session before any read.
   const authed = !isSupabaseConfigured || Boolean(session)
@@ -55,11 +60,16 @@ export default function App() {
       getQueue(),
       getSchedule(),
       getSystemStatus(),
-    ]).then(([clinic, doctor, kpis, navGroups, queue, schedule, systemStatus]) => {
-      if (!active) return
-      setData({ clinic, doctor, kpis, navGroups, queue, schedule, systemStatus })
-      setSelectedId(queue[0]?.chart ?? null)
-    })
+      getWards(),
+      getAdmissions(),
+      getWardSummary(),
+    ]).then(
+      ([clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary]) => {
+        if (!active) return
+        setData({ clinic, doctor, kpis, navGroups, queue, schedule, systemStatus, wards, admissions, wardSummary })
+        setSelectedId(queue[0]?.chart ?? null)
+      }
+    )
     return () => {
       active = false
     }
@@ -235,7 +245,10 @@ export default function App() {
   return (
     <div className="app">
       <TopBar clinic={data.clinic} doctor={data.doctor} search={search} onSearch={setSearch} />
-      <Sidebar navGroups={data.navGroups} systemStatus={data.systemStatus} />
+      <Sidebar navGroups={data.navGroups} systemStatus={data.systemStatus} view={view} onNavigate={setView} />
+      {view === 'ward' ? (
+        <Ward wards={data.wards} admissions={data.admissions} summary={data.wardSummary} />
+      ) : (
       <main className="main">
         <div className="crumb">
           <h1>진료 대시보드</h1>
@@ -282,6 +295,7 @@ export default function App() {
           <Schedule schedule={data.schedule} />
         </div>
       </main>
+      )}
     </div>
   )
 }

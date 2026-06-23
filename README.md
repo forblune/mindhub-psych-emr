@@ -64,7 +64,8 @@ Supabase 대시보드 **SQL Editor** 에 순서대로 붙여넣고 실행:
 7) supabase/migrations/0007_scale_lab_update.sql # 척도·검사 수정 정책
 8) supabase/migrations/0008_realtime.sql   # 대기열 Realtime publication
 9) supabase/migrations/0009_kpis_view.sql  # 대시보드 KPI 집계 뷰(security_invoker)
-10) supabase/seed.sql                      # 데모 데이터(담당의 연결 포함)
+10) supabase/migrations/0010_ward.sql      # 입원·병동(wards/admissions) + RLS + 집계 뷰
+11) supabase/seed.sql                      # 데모 데이터(담당의 연결 포함)
 ```
 (또는 Supabase CLI: `supabase db push` 후 `psql ... -f supabase/seed.sql`)
 
@@ -124,7 +125,9 @@ patients                         환자 인구학 정보 (chart_no 고유)
   ├─ clinical_notes              SOAP 면담 기록 (segments jsonb)
   └─ patient_detail_meta         요약 + 처방 경고
 appointments                     진료 일정
-kpis                             대시보드 지표 (추후 집계 뷰로 대체 가능)
+wards · admissions               병동 / 입원(입원유형·격리·acuity, attending_id 기준 RLS)
+dashboard_kpis · ward_summary    집계 뷰(security_invoker → 역할별 RLS 집계)
+kpis                             (레거시) 큐레이션 지표 — dashboard_kpis 뷰로 대체됨
 ```
 
 - 컴포넌트는 `data/api.js` 함수만 호출 → DB row를 기존과 **동일한 shape**로 매핑하므로 컴포넌트 수정 0.

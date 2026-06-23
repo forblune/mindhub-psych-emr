@@ -3,7 +3,7 @@
 begin;
 truncate clinics, doctors, patients, queue_entries, safety_assessments,
   rating_scales, trend_points, labs, prescriptions, clinical_notes,
-  patient_detail_meta, appointments, kpis restart identity cascade;
+  patient_detail_meta, appointments, kpis, wards, admissions restart identity cascade;
 
 insert into clinics (hospital, department, room, session, display_date) values
   ('메디코어', '정신건강의학과', '제2진료실', '2026-06-22 오후 진료', '2026-06-22 (월)');
@@ -29,6 +29,21 @@ insert into appointments (sort, start_time, patient_name, description, bar, badg
   (6, '16:30', '한예린', '재진 · 양극성장애', 'sl-mut', null, null, '예약', false),
   (7, '16:50', '조민재', '재진 · 조현병', 'sl-mut', null, null, '예약', false),
   (8, '17:10', '신아윤', '재진 · 불면', 'sl-mut', null, null, '예약', false);
+
+insert into wards (sort, code, name, total_beds) values
+  (0, '5A', '폐쇄병동 5A', 12),
+  (1, '4B', '개방병동 4B', 8);
+
+insert into admissions (sort, ward_id, attending_id, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo) values
+  (0, (select id from wards where code='5A'), (select id from doctors order by ext_id limit 1), '문상철', '남', 49, '00640012', '501', 'A', '보호입원', '격리', 'F20.0', '2026-06-18', 5, '중증', '급성 정신병적 흥분, 격리·관찰 중'),
+  (1, (select id from wards where code='5A'), (select id from doctors order by ext_id limit 1), '김하나', '여', 33, '00640021', '501', 'B', '자의입원', '입원중', 'F31.2', '2026-06-15', 8, '주의', '조증 삽화, 리튬 적정 중'),
+  (2, (select id from wards where code='5A'), (select id from doctors order by ext_id limit 1), '이도경', '남', 27, '00640033', '503', 'A', '행정입원', '관찰', 'F32.2', '2026-06-20', 3, '중증', '자살시도 후 입원, 1:1 관찰'),
+  (3, (select id from wards where code='5A'), (select id from doctors order by ext_id limit 1), '박서연', '여', 41, '00640048', '503', 'B', '자의입원', '입원중', 'F33.2', '2026-06-12', 11, '주의', '주요우울 재발, 약물 조정'),
+  (4, (select id from wards where code='5A'), (select id from doctors order by ext_id limit 1), '정우진', '남', 55, '00640052', '505', 'A', '보호입원', '입원중', 'F10.2', '2026-06-10', 13, '일반', '알코올 해독 후 재활'),
+  (5, (select id from wards where code='4B'), (select id from doctors order by ext_id limit 1), '한지민', '여', 22, '00640066', '402', 'A', '자의입원', '퇴원예정', 'F50.0', '2026-06-05', 18, '일반', '섭식장애, 체중 회복·퇴원 계획'),
+  (6, (select id from wards where code='4B'), (select id from doctors order by ext_id limit 1), '오세영', '남', 36, '00640071', '402', 'B', '자의입원', '입원중', 'F41.1', '2026-06-17', 6, '일반', '범불안·공황, 인지행동치료 병행'),
+  (7, (select id from wards where code='4B'), (select id from doctors order by ext_id limit 1), '신예지', '여', 29, '00640085', '404', 'A', '자의입원', '입원중', 'F60.3', '2026-06-14', 9, '주의', '경계성 인격, 변증법적행동치료'),
+  (8, (select id from wards where code='4B'), (select id from doctors order by ext_id limit 1), '강민재', '남', 31, '00640090', '404', 'B', '자의입원', '입원중', 'F25.0', '2026-06-16', 7, '일반', '분열정동장애, 약물 유지');
 
 -- ── 정수민 (00513382) ──
 insert into patients (chart_no, name, sex, age, rrn, initial, primary_tags, attending_id) values

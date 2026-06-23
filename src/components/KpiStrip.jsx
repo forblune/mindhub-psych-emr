@@ -1,6 +1,6 @@
 export default function KpiStrip({ kpis }) {
   return (
-    <div className="kpis">
+    <div className="kpis" style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}>
       {kpis.map((k) => (
         <div className={`kpi ${k.tone}`} key={k.label}>
           <span className="tick" />

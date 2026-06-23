@@ -17,8 +17,8 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.brand')).toContainText('메디코어')
     await expect(page.locator('.dept-pill')).toContainText('정신건강의학과')
 
-    // KPI 6개, 대기열 7행
-    await expect(page.locator('.kpi')).toHaveCount(6)
+    // KPI 7개(담당 입원 포함), 대기열 7행
+    await expect(page.locator('.kpi')).toHaveCount(7)
     await expect(page.locator('.qrow')).toHaveCount(7)
 
     // 기본 선택 환자 = 정수민
@@ -41,6 +41,30 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(kpi('상담 중')).toHaveText('1')
     await expect(kpi('금일 내원')).toHaveText('7')
     await expect(kpi('고위험 환자')).toHaveText('1')
+  })
+
+  test('입원·병동 모듈 — 네비게이션·보드·병동 필터', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '입원 · 폐쇄병동' }).click()
+
+    await expect(page.locator('.crumb h1')).toHaveText('입원 · 병동')
+    await expect(page.locator('.ward-occ')).toBeVisible()
+
+    // 재원 환자 9 (mock), 입원 테이블 9행
+    const rewon = page
+      .locator('.kpi')
+      .filter({ has: page.locator('.lab', { hasText: '재원 환자' }) })
+      .locator('.val')
+    await expect(rewon).toHaveText('9')
+    await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
+
+    // 병동 필터: 5A → 5명
+    await page.locator('.ward-list .seg button', { hasText: '5A' }).click()
+    await expect(page.locator('.ward-list tbody tr')).toHaveCount(5)
+
+    // 대시보드로 복귀
+    await page.locator('.nav-item', { hasText: '진료 대시보드' }).click()
+    await expect(page.locator('.crumb h1')).toHaveText('진료 대시보드')
   })
 
   test('대기열 행을 클릭하면 환자 패널이 바뀐다', async ({ page }) => {

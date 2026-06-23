@@ -73,11 +73,12 @@ function kpiCards(r) {
     { tone: 't-crit', label: '고위험 환자', value: String(r.highRisk), sub: '중등도', delta: String(r.midRisk), deltaTone: 'dn' },
     { tone: 't-ok', label: '금일 내원', value: String(r.visitsToday), sub: `대기 ${r.waiting}` },
     { tone: 't-warn', label: '신규 처방', value: String(r.newRx), sub: '검토 대기' },
+    { tone: 't-ok', label: '담당 입원', value: String(r.admitted ?? 0), sub: '폐쇄·개방병동' },
   ]
 }
 
 // Mock-mode: compute the same aggregates the SQL view computes.
-function computeKpiRaw(queue, schedule) {
+function computeKpiRaw(queue, schedule, admissions) {
   const slots = schedule.slots || []
   const inSet = (s) => ['대기', '신규', '위기'].includes(s)
   return {
@@ -89,11 +90,12 @@ function computeKpiRaw(queue, schedule) {
     highRisk: queue.filter((p) => p.risk === 'hi').length,
     midRisk: queue.filter((p) => p.risk === 'md').length,
     newRx: queue.reduce((n, p) => n + (p.detail?.rx?.items || []).filter((r) => r.isNew).length, 0),
+    admitted: (admissions || []).length,
   }
 }
 
 export async function getKpis() {
-  if (!isSupabaseConfigured) return kpiCards(computeKpiRaw(mock.queue, mock.schedule))
+  if (!isSupabaseConfigured) return kpiCards(computeKpiRaw(mock.queue, mock.schedule, mock.admissions))
   const { data, error } = await supabase.from('dashboard_kpis').select('*').single()
   if (error) throw error
   return kpiCards({
@@ -105,7 +107,63 @@ export async function getKpis() {
     highRisk: data.high_risk,
     midRisk: data.mid_risk,
     newRx: data.new_rx,
+    admitted: data.admitted,
   })
+}
+
+// ── ward / admissions ───────────────────────────────────────────
+export async function getWards() {
+  if (!isSupabaseConfigured) return mock.wards.map((w) => ({ ...w }))
+  const { data, error } = await supabase.from('wards').select('code, name, total_beds').order('sort')
+  if (error) throw error
+  return data
+}
+
+export async function getAdmissions() {
+  if (!isSupabaseConfigured) {
+    return mock.admissions.map((a) => ({
+      ward: a.ward, room: a.room, bed: a.bed, name: a.name, sex: a.sex, age: a.age,
+      chart: a.chart, legal: a.legal, status: a.status, dx: a.dx,
+      admittedOn: a.admittedOn, dayNo: a.dayNo, acuity: a.acuity, memo: a.memo,
+    }))
+  }
+  const { data, error } = await supabase
+    .from('admissions')
+    .select('sort, patient_name, sex, age, chart_no, room, bed, legal_status, status, dx, admitted_on, day_no, acuity, memo, ward:wards(code, name)')
+    .order('sort')
+  if (error) throw error
+  return data.map((a) => ({
+    ward: a.ward?.code, wardName: a.ward?.name, room: a.room, bed: a.bed,
+    name: a.patient_name, sex: a.sex, age: a.age, chart: a.chart_no,
+    legal: a.legal_status, status: a.status, dx: a.dx,
+    admittedOn: a.admitted_on, dayNo: a.day_no, acuity: a.acuity, memo: a.memo,
+  }))
+}
+
+function wardSummary(wards, adms) {
+  const totalBeds = wards.reduce((n, w) => n + (w.total_beds || 0), 0)
+  return {
+    totalBeds,
+    occupied: adms.length,
+    isolation: adms.filter((a) => a.status === '격리').length,
+    observation: adms.filter((a) => a.status === '관찰').length,
+    dischargePlanned: adms.filter((a) => a.status === '퇴원예정').length,
+    acute: adms.filter((a) => a.acuity === '중증').length,
+  }
+}
+
+export async function getWardSummary() {
+  if (!isSupabaseConfigured) return wardSummary(mock.wards, mock.admissions)
+  const { data, error } = await supabase.from('ward_summary').select('*').single()
+  if (error) throw error
+  return {
+    totalBeds: data.total_beds,
+    occupied: data.occupied,
+    isolation: data.isolation,
+    observation: data.observation,
+    dischargePlanned: data.discharge_planned,
+    acute: data.acute,
+  }
 }
 
 export async function getSchedule() {
