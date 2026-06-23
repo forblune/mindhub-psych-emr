@@ -159,6 +159,7 @@ React(Vite)  ──>  data/api.js (seam)  ──>  Supabase  (env 있을 때)
 - **진단 한글명 동반 표시** (`PatientDetail`·`PatientQueue`·`Ward`·`Billing`) — diagnoses 마스터를 코드→엔트리 매핑으로 받아, 환자 패널 헤더(코드 칩+KCD 한글명+DSM-5명)·대기열·병동·청구의 dx 셀에 코드 아래 KCD 한글명을 함께 표시(미매칭 코드는 코드만, title 툴팁 보강). App 이 `data.diagnoses` 를 네 컴포넌트에 전달.
   - **병동 입원 등록/수정 폼**도 자유 텍스트 → `DiagnosisPicker`(DSM-5 선택) 로 교체(신규접수와 일관).
   - **청구에 주상병 추가** — `0018_billing_dx.sql`: billings 에 `dx`(주상병 ICD-10/KCD) 컬럼(기본 ''·하위호환). 실제 청구가 상병코드 기반인 점 반영. mock/seed 는 각 외래 환자의 실제 dx 로 채움. 청구 목록에 **주상병** 열(코드+한글명) 추가.
+  - **통계 진단 분포 한글명화** (`Stats.jsx` `DxBars`) — 기존 외래/입원 진단 분포가 F코드 원본만 보이던 것을, 코드 칩 + **KCD 한글명**을 한 줄로 띄우고 막대는 아래에 두는 레이아웃으로 교체(긴 진단명 수용, title 툴팁). `diagnoses` 를 Stats 에 전달.
 
 ## 아직 안 된 것
 - 미검증(서비스 레이어, SQL 아님): 호스팅 GoTrue 이메일 인증, PostgREST 임베딩 응답 shape, 실시간 수신 → 본인 Supabase에 올린 뒤 로그인 1회로 확인 권장

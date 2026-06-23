@@ -33,6 +33,26 @@ function sevClass(name, avg) {
   return 'min'
 }
 
+// 진단 분포 — 코드 칩 + KCD 한글명을 한 줄로, 막대는 아래(긴 진단명 수용).
+function DxBars({ data, color = 'acc' }) {
+  const top = Math.max(1, ...data.map((d) => d.value))
+  return (
+    <div className="dxbars">
+      {data.length === 0 && <div className="queue-empty">데이터 없음</div>}
+      {data.map((d) => (
+        <div className="dxbar-row" key={d.label} title={d.name ? `${d.label} · ${d.name}` : d.label}>
+          <div className="dxbar-head">
+            <span className="dx">{d.label}</span>
+            <span className="dxbar-name">{d.name || '미분류'}</span>
+            <span className="num dxbar-n">{d.value}</span>
+          </div>
+          <span className="bar-track"><i className={`bar-fill bf-${color}`} style={{ width: `${(d.value / top) * 100}%` }} /></span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Bars({ data, max, color = 'acc' }) {
   const top = max ?? Math.max(1, ...data.map((d) => d.value))
   return (
@@ -119,9 +139,11 @@ function RiskDonut({ segments }) {
   return <canvas ref={ref} className="donut-cv" />
 }
 
-export default function Stats({ queue, admissions, wards }) {
-  const dxOut = countBy(queue, 'dx')
-  const dxAdm = countBy(admissions, 'dx')
+export default function Stats({ queue, admissions, wards, diagnoses = [] }) {
+  const dxName = new Map(diagnoses.map((d) => [d.code, d.ko]))
+  const withName = (rows) => rows.map((d) => ({ ...d, name: dxName.get(d.label) || '' }))
+  const dxOut = withName(countBy(queue, 'dx'))
+  const dxAdm = withName(countBy(admissions, 'dx'))
   const legal = countBy(admissions, 'legal')
   const scales = scaleAverages(queue)
   const risk = {
@@ -172,8 +194,8 @@ export default function Stats({ queue, admissions, wards }) {
 
       <div className="stats-grid">
         <section className="card stat-card">
-          <div className="hd"><h3>외래 진단 분포</h3><span className="meta">F코드</span></div>
-          <div className="stat-body"><Bars data={dxOut} color="acc" /></div>
+          <div className="hd"><h3>외래 진단 분포</h3><span className="meta">주상병 · KCD</span></div>
+          <div className="stat-body"><DxBars data={dxOut} color="acc" /></div>
         </section>
 
         <section className="card stat-card">
@@ -229,8 +251,8 @@ export default function Stats({ queue, admissions, wards }) {
         </section>
 
         <section className="card stat-card">
-          <div className="hd"><h3>입원 진단 분포</h3><span className="meta">F코드</span></div>
-          <div className="stat-body"><Bars data={dxAdm} color="ok" /></div>
+          <div className="hd"><h3>입원 진단 분포</h3><span className="meta">주상병 · KCD</span></div>
+          <div className="stat-body"><DxBars data={dxAdm} color="ok" /></div>
         </section>
       </div>
     </main>

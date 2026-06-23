@@ -428,7 +428,7 @@ export default function App() {
           onDeleteAdmission={handleDeleteAdmission}
         />
       ) : view === 'stats' ? (
-        <Stats queue={data.queue} admissions={data.admissions} wards={data.wards} />
+        <Stats queue={data.queue} admissions={data.admissions} wards={data.wards} diagnoses={data.diagnoses} />
       ) : view === 'appts' ? (
         <Appointments
           schedule={data.schedule}

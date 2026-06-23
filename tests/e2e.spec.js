@@ -256,8 +256,12 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     // 통계 카드 6개 + 위험도 도넛 canvas
     await expect(page.locator('.stat-card')).toHaveCount(6)
     await expect(page.locator('.donut-cv')).toBeVisible()
-    // 외래 진단 분포에 바가 그려짐
-    await expect(page.locator('.stat-card', { hasText: '외래 진단 분포' }).locator('.bar-row').first()).toBeVisible()
+    // 외래 진단 분포: 코드 + KCD 한글명으로 막대가 그려짐
+    const outDx = page.locator('.stat-card', { hasText: '외래 진단 분포' })
+    await expect(outDx.locator('.dxbar-row').first()).toBeVisible()
+    await expect(outDx).toContainText('범불안장애') // 임서윤 F41.1
+    // 입원 진단 분포에도 한글명(문상철 F20.0 편집조현병)
+    await expect(page.locator('.stat-card', { hasText: '입원 진단 분포' })).toContainText('편집조현병')
   })
 
   test('새로고침 — 데이터 재조회', async ({ page }) => {

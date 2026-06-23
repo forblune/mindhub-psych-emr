@@ -381,6 +381,11 @@ td.ta-r{font-variant-numeric:tabular-nums;}
 .bar-fill{display:block;height:100%;border-radius:5px;background:var(--accent);transition:width .4s ease;}
 .bf-acc{background:var(--accent);} .bf-warn{background:var(--warn);} .bf-ok{background:var(--ok);}
 .bar-val{text-align:right;color:var(--ink);font-weight:600;}
+.dxbars{display:flex;flex-direction:column;gap:10px;}
+.dxbar-row{display:flex;flex-direction:column;gap:4px;}
+.dxbar-head{display:flex;align-items:baseline;gap:7px;font-size:11.5px;}
+.dxbar-name{flex:1;color:var(--ink-2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dxbar-n{flex:none;color:var(--ink);font-weight:700;}
 .donut-wrap{display:flex;align-items:center;gap:16px;}
 .donut-cv{width:130px;height:130px;flex:none;}
 .donut-legend{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--ink-2);}
