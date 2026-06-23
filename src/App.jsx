@@ -7,6 +7,7 @@ import PatientQueue from './components/PatientQueue'
 import PatientDetail from './components/PatientDetail'
 import Schedule from './components/Schedule'
 import Ward from './components/Ward'
+import Stats from './components/Stats'
 import NewVisit from './components/NewVisit'
 import Login from './components/Login'
 import { useAuth } from './context/AuthContext'
@@ -327,6 +328,8 @@ export default function App() {
           onUpdateAdmission={handleUpdateAdmission}
           onDeleteAdmission={handleDeleteAdmission}
         />
+      ) : view === 'stats' ? (
+        <Stats queue={data.queue} admissions={data.admissions} wards={data.wards} />
       ) : (
       <main className="main">
         <div className="crumb">

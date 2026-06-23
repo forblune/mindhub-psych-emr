@@ -96,6 +96,24 @@ test.describe('정신과 EMR 대시보드 (mock 모드)', () => {
     await expect(page.locator('.ward-list tbody tr')).toHaveCount(9)
   })
 
+  test('통계 지표 — 네비게이션·집계 카드', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.nav-item', { hasText: '통계 · 지표' }).click()
+
+    await expect(page.locator('.crumb h1')).toHaveText('통계 · 지표')
+    // 관리 환자 = 외래 7 + 입원 9 = 16
+    const total = page
+      .locator('.kpi')
+      .filter({ has: page.locator('.lab', { hasText: '관리 환자' }) })
+      .locator('.val')
+    await expect(total).toHaveText('16')
+    // 통계 카드 6개 + 위험도 도넛 canvas
+    await expect(page.locator('.stat-card')).toHaveCount(6)
+    await expect(page.locator('.donut-cv')).toBeVisible()
+    // 외래 진단 분포에 바가 그려짐
+    await expect(page.locator('.stat-card', { hasText: '외래 진단 분포' }).locator('.bar-row').first()).toBeVisible()
+  })
+
   test('새로고침 — 데이터 재조회', async ({ page }) => {
     await page.goto('/')
     await page.locator('.crumb-actions .btn', { hasText: '새로고침' }).click()
