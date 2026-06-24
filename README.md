@@ -1,4 +1,7 @@
-# 메디코어 EMR · 정신건강의학과 진료센터 (React)
+# MindHub Psych EMR
+Psychiatry EMR prototype connected to MindHub clinical summaries
+
+MindHub Psych EMR은 MindHub의 의사용 정신건강의학과 EMR 프로토타입입니다. 환자용 MindHub에서 생성된 진료 전 요약 리포트와 정신건강의학과 진료 흐름을 연결하는 대시보드입니다.
 
 ERP 스타일 정신과 진료 EMR. 단일 HTML 목업 → React 컴포넌트 + mock 데이터로 시작해,
 Supabase(역할 기반 RLS)·Realtime·임상 CRUD까지 확장한 프로토타입.

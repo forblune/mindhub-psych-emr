@@ -36,7 +36,7 @@ export default function Login() {
         <div className="login-brand">
           <span className="mark">ψ</span>
           <div>
-            <b>메디코어 EMR</b>
+            <b>MindHub Psych EMR</b>
             <span>정신건강의학과 진료센터</span>
           </div>
         </div>
