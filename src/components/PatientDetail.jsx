@@ -3,12 +3,14 @@ import ScalesTab from './tabs/ScalesTab'
 import LabsTab from './tabs/LabsTab'
 import RxTab from './tabs/RxTab'
 import NotesTab from './tabs/NotesTab'
+import MindHubTab from './tabs/MindHubTab'
 
 const TABS = [
   { key: 'sc', label: '평가척도', Comp: ScalesTab },
   { key: 'lab', label: '검사·약물농도', Comp: LabsTab },
   { key: 'rx', label: '처방·오더', Comp: RxTab },
   { key: 'note', label: '경과·면담', Comp: NotesTab },
+  { key: 'mindhub', label: '마음기록 요약', Comp: MindHubTab },
 ]
 
 export default function PatientDetail({
@@ -85,6 +87,7 @@ export default function PatientDetail({
       <div className="panes">
         <Active
           detail={patient.detail}
+          patient={patient}
           onAddNote={(segments) => onAddNote(c, segments)}
           onAddRx={(rx) => onAddRx(c, rx)}
           onUpdateNote={(index, segments) => onUpdateNote(c, index, segments)}

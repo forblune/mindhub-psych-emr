@@ -150,6 +150,9 @@ React(Vite)  ──>  data/api.js (seam)  ──>  Supabase  (env 있을 때)
 - **결과 표현 안전장치** — 결과는 "낮음/중간/높음" 참고 구간으로만 표시하고, 화면/모달에 항상 "진단이 아니며 실제 진료 판단에는 전문가 평가가 필요합니다." 문구를 노출. 자살위험 고위험 신호는 붉은 경고 카드와 "즉시 전문가/응급 도움 필요" 안내만 표시.
 - **라우팅/디자인** — `data/config.js`의 사이드바 항목에 `view: 'scale-demo'`를 연결하고 `App.jsx` 라우팅에 `ScaleDemo`를 추가. `theme.css`에 기존 카드/모달 톤을 따르는 전용 스타일과 모바일 반응형 규칙을 추가.
 - **검증** — `npm run build` 통과, Playwright 수동 클릭 검증(메뉴 이동·PHQ-9 계산·자살위험 경고·콘솔 에러 0·깨진 링크 0), `npm test` **40/40 통과**.
+- **MindHub 제품군 데모 연결** (`PatientDetail.jsx`, `tabs/MindHubTab.jsx`) — 환자 상세 패널에 **"마음기록 요약"** 읽기 전용 탭을 추가. 현재는 실제 DB 연동 없이 강하늘 차트(`00781120`)에만 MindHub 환자앱 공유 신호를 정적 데모로 표시한다.
+- **표시 데이터** — MindHub `doctor.html?demo=1`과 같은 흐름의 수면(6→4→3h), 복약(2/3일), 기분(3.0/10), 직장 스트레스, red flag 근거 문장 1건을 카드와 타임라인으로 제공. "MindHub 환자앱에서 공유된 데모 데이터" 및 "진단/처방 자동화가 아닌 참고자료" 문구를 상단에 고정했다.
+- **통합 경계** — 이 탭은 환자 일상 대화에서 온 참고 신호를 EMR 차트 안에 보여주는 포트폴리오 연결 데모다. 진단·처방·C-SSRS·노트에는 자동 반영하지 않고, 실제 연동은 향후 `care_links` + consent RPC 설계로 분리한다.
 
 ## 구현 완료 (실동작)
 - **검색** — TopBar 입력으로 대기열 필터(이름·차트번호·F코드·주민번호). Ctrl+K 포커스, Esc/× 초기화, 빈 상태 표시. 상태는 App→TopBar/PatientQueue로 흐름.
@@ -258,6 +261,7 @@ node scripts/gen-seed.mjs
 - 화면 전환 → `App.jsx` `view` (dashboard/scale-demo/appts/ward/stats/search/billing/meds), 사이드바 `data/config.js`
 - 화면 컴포넌트 → `src/components/**` (탭: `tabs/**`; 화면: `Ward`/`Stats`/`PatientSearch`/`Appointments`/`Billing`/`Medications`/`NewVisit`)
 - 심리평가/척도 데모 검사 → `src/components/ScaleDemo.jsx` (저장 없는 프론트 상태)
+- MindHub 공유 요약 데모 → `src/components/tabs/MindHubTab.jsx` (강하늘 차트 한정 정적 데이터, 저장 없음)
 - 척도 중증도 분류 로직 → `src/lib/scales.js`
 - 진단 코드(DSM-5↔ICD-10/KCD) 추가·수정 → `src/data/diagnoses.js` (+ `gen-seed.mjs` 재실행), 선택 UI → `src/components/DiagnosisPicker.jsx`(신규접수 `NewVisit.jsx`에서 사용)
 - E2E 테스트 → `tests/e2e.spec.js` (`npm test`, viewport 1440×900 고정)
